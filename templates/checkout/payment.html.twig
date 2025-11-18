@@ -1,0 +1,45 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="container my-5">
+    <h1>Choix du paiement</h1>
+    <h4 class="mt-4">Adresse de livraison</h4>
+    <ul class="list-group mb-4">
+        <li class="list-group-item"><strong>Adresse :</strong> {{ address.address }}</li>
+        <li class="list-group-item"><strong>Ville :</strong> {{ address.city }}</li>
+        <li class="list-group-item"><strong>Code postal :</strong> {{ address.zip }}</li>
+        <li class="list-group-item"><strong>Pays :</strong> {{ address.country }}</li>
+    </ul>
+    <h4>Récapitulatif du panier</h4>
+    <table class="table table-bordered table-hover mt-3">
+        <thead class="table-light">
+            <tr>
+                <th>Produit</th>
+                <th>Quantité</th>
+                <th>Prix unitaire</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set total = 0 %}
+            {% for item in cart %}
+                <tr>
+                    <td>{{ item.product.name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.product.price|number_format(2, ',', ' ') }} €</td>
+                    <td>{{ (item.product.price * item.quantity)|number_format(2, ',', ' ') }} €</td>
+                </tr>
+                {% set total = total + (item.product.price * item.quantity) %}
+            {% endfor %}
+        </tbody>
+    </table>
+    <h4 class="text-end">Total : {{ total|number_format(2, ',', ' ') }} €</h4>
+    <hr>
+    <h4 class="mt-4">Choisissez votre mode de paiement</h4>
+    <div class="d-flex gap-4 mt-3">
+        <a href="{{ path('checkout_pay_stripe') }}" class="btn btn-primary btn-lg">Stripe (test)</a>
+        <a href="{{ path('checkout_pay_paypal') }}" class="btn btn-secondary btn-lg">PayPal (test)</a>
+    </div>
+    <p class="text-muted mt-3">(Paiement en mode test, intégration réelle à venir)</p>
+</div>
+{% endblock %}

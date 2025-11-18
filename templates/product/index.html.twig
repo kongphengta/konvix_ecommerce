@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Accueil - Nos produits
+{% endblock %}
+
+{% block body %}
+	{% include '_partials/_hero.html.twig' %}
+	{% include '_partials/_breadcrumb.html.twig' %}
+	<h1 class="mb-4">Nos produits</h1>
+	<div class="row g-4">
+		{% for product in products %}
+			<div class="col-12 col-sm-6 col-md-4 col-lg-3">
+				<div class="card h-100 shadow-sm">
+					<a href="{{ path('app_product_show', {id: product.id}) }}">
+						<img src="{{ product.mainImage }}" class="card-img-top" alt="{{ product.name }}" style="height: 180px; object-fit: cover;">
+					</a>
+					<div class="card-body d-flex flex-column">
+						<h5 class="card-title">{{ product.name }}</h5>
+						<p class="card-text mb-1">
+							<span class="text-muted">Catégorie :</span>
+							{{ product.category.name }}</p>
+						<p class="card-text mb-1">
+							<span class="text-muted">Vendeur :</span>
+							{{ product.seller.name }}</p>
+						<p class="card-text fw-bold text-success mb-2">{{ product.price|number_format(2, '.', ' ') }}
+							€</p>
+						<a href="{{ path('app_product_show', {id: product.id}) }}" class="btn btn-primary mt-auto">Voir le détail</a>
+					</div>
+				</div>
+			</div>
+		{% else %}
+			<p>Aucun produit disponible.</p>
+		{% endfor %}
+	</div>
+{% endblock %}

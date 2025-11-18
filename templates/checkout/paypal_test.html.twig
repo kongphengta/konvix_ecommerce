@@ -1,0 +1,9 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="container my-5 text-center">
+    <h1>Paiement PayPal (mode test)</h1>
+    <div class="alert alert-success mt-4">Simulation de paiement PayPal en mode test.<br>Intégration réelle à venir.</div>
+    <a href="{{ path('cart_index') }}" class="btn btn-primary mt-4">Retour au panier</a>
+</div>
+{% endblock %}

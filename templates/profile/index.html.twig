@@ -1,0 +1,75 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon espace client{% endblock %}
+
+{% block body %}
+    <div class="container mt-5">
+        <h1>Bienvenue sur votre espace client</h1>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Mes informations</h5>
+                        <ul class="list-unstyled mb-0">
+                            <li><strong>Nom :</strong> {{ user.lastName }}</li>
+                            <li><strong>Prénom :</strong> {{ user.firstName }}</li>
+                            <li><strong>Email :</strong> {{ user.email }}</li>
+                            <li><strong>Adresse :</strong> {{ user.address }}</li>
+                            <li><strong>Ville :</strong> {{ user.city }}</li>
+                            <li><strong>Code postal :</strong> {{ user.zip }}</li>
+                            <li><strong>Pays :</strong> {{ user.country }}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Changer mon mot de passe</h5>
+                        {% if changePasswordForm is defined %}
+                            {{ form_start(changePasswordForm) }}
+                                {{ form_row(changePasswordForm.currentPassword, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_row(changePasswordForm.newPassword, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_row(changePasswordForm.confirmPassword, {'attr': {'class': 'form-control'}}) }}
+                                <button class="btn btn-primary w-100 mt-3" type="submit">Valider</button>
+                            {{ form_end(changePasswordForm) }}
+                        {% else %}
+                            <a href="{{ path('app_profile_password') }}" class="btn btn-outline-secondary btn-sm mt-3">Changer mon mot de passe</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Mes commandes</h5>
+                {% if orders|length > 0 %}
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Total</th>
+                                <th>Statut</th>
+                                <th>Facture</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for order in orders %}
+                            <tr>
+                                <td>{{ order.createdAt ? order.createdAt|date('d/m/Y H:i') : '' }}</td>
+                                <td>{{ order.total|number_format(2, ',', ' ') }} €</td>
+                                <td>{{ order.status }}</td>
+                                <td>
+                                    <a href="#" class="btn btn-sm btn-outline-primary disabled">PDF</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>Aucune commande pour le moment.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

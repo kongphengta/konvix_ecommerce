@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="container my-5">
+    <h1>Passer la commande</h1>
+    <h4 class="mt-4">Récapitulatif du panier</h4>
+    {% if cart is empty %}
+        <div class="alert alert-info">Votre panier est vide.</div>
+    {% else %}
+        <table class="table table-bordered table-hover mt-3">
+            <thead class="table-light">
+                <tr>
+                    <th>Produit</th>
+                    <th>Quantité</th>
+                    <th>Prix unitaire</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% set total = 0 %}
+                {% for item in cart %}
+                    <tr>
+                        <td>{{ item.product.name }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>{{ item.product.price|number_format(2, ',', ' ') }} €</td>
+                        <td>{{ (item.product.price * item.quantity)|number_format(2, ',', ' ') }} €</td>
+                    </tr>
+                    {% set total = total + (item.product.price * item.quantity) %}
+                {% endfor %}
+            </tbody>
+        </table>
+        <h4 class="text-end">Total : {{ total|number_format(2, ',', ' ') }} €</h4>
+        <hr>
+        <h4 class="mt-4">Adresse de livraison</h4>
+        <form method="post" action="#">
+            <div class="mb-3">
+                <label for="address" class="form-label">Adresse complète</label>
+                <input type="text" class="form-control" id="address" name="address" required>
+            </div>
+            <div class="mb-3">
+                <label for="city" class="form-label">Ville</label>
+                <input type="text" class="form-control" id="city" name="city" required>
+            </div>
+            <div class="mb-3">
+                <label for="zip" class="form-label">Code postal</label>
+                <input type="text" class="form-control" id="zip" name="zip" required>
+            </div>
+            <div class="mb-3">
+                <label for="country" class="form-label">Pays</label>
+                <input type="text" class="form-control" id="country" name="country" required>
+            </div>
+            <button type="submit" class="btn btn-success">Valider et choisir le paiement</button>
+        </form>
+    {% endif %}
+</div>
+{% endblock %}

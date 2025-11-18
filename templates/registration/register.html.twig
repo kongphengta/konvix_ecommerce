@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+{% form_theme registrationForm 'bootstrap_5_layout.html.twig' %}
+
+
+{% block title %}Inscription{% endblock %}
+
+{% block body %}
+
+	{% for flash_error in app.flashes('verify_email_error') %}
+		<div class="alert alert-danger" role="alert">{{ flash_error }}</div>
+	{% endfor %}
+
+	{% for message in app.flashes('success') %}
+		<div class="alert alert-success d-flex justify-content-between align-items-center" role="alert">
+			<span>{{ message }}</span>
+			<a href="{{ path('app_register_complete') }}" class="btn btn-success ms-3">Compléter votre profil</a>
+		</div>
+	{% endfor %}
+
+
+	<h1>Inscription</h1>
+
+	{{ form_errors(registrationForm) }}
+
+	{{ form_start(registrationForm) }}
+	{{ form_row(registrationForm.firstName) }}
+	{{ form_row(registrationForm.lastName) }}
+	{{ form_row(registrationForm.email) }}
+	{{ form_row(registrationForm.plainPassword) }}
+	{{ form_row(registrationForm.confirmPassword) }}
+	{{ form_row(registrationForm.agreeTerms) }}
+
+	<button type="submit" class="btn btn-primary">S'inscrire</button>
+	{{ form_end(registrationForm) }}
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+{% form_theme profileForm 'bootstrap_5_layout.html.twig' %}
+
+{% block title %}Compléter mon profil{% endblock %}
+
+{% block body %}
+    <div class="container mt-5">
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success text-center" role="alert">
+                <span class="fw-bold">{{ message }}</span>
+                {% if 'compléter votre profil' in message %}
+                    <div class="mt-3">
+                        <a href="#profile-form" class="btn btn-success btn-lg fw-bold">Compléter votre profil</a>
+                    </div>
+                {% elseif 'inscription est complète' in message %}
+                    <div class="mt-3">
+                        <a href="{{ path('app_profile') }}" class="btn btn-primary btn-lg fw-bold">Mon profil</a>
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+        <h1 id="profile-form">Compléter mon profil</h1>
+        {{ form_start(profileForm) }}
+            {{ form_row(profileForm.address) }}
+            {{ form_row(profileForm.city) }}
+            {{ form_row(profileForm.zip) }}
+            {{ form_row(profileForm.country) }}
+            <button type="submit" class="btn btn-primary mt-3">Enregistrer</button>
+        {{ form_end(profileForm) }}
+    </div>
+{% endblock %}

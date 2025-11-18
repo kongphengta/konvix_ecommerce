@@ -1,0 +1,17 @@
+<div class="mt-4 mb-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb bg-white px-3 py-2 rounded shadow-sm">
+            <li class="breadcrumb-item">
+                <a href="{{ path('app_home') }}">Accueil</a>
+            </li>
+            {% if category is defined %}
+                <li class="breadcrumb-item">
+                    <a href="#">{{ category.name }}</a>
+                </li>
+            {% endif %}
+            {% if product is defined %}
+                <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+            {% endif %}
+        </ol>
+    </nav>
+</div>

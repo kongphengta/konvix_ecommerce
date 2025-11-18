@@ -1,0 +1,204 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+	{% include '_partials/_hero.html.twig' %}
+	{% include '_partials/_breadcrumb.html.twig' %}
+<div class="row g-4">
+	<div class="col-md-6">
+		<div class="card mb-3">
+			<img src="{{ product.mainImage }}" class="card-img-top" alt="{{ product.name }}" style="height: 320px; object-fit: cover; cursor: zoom-in;" id="mainProductImage" data-bs-toggle="modal" data-bs-target="#zoomModal">
+			<div class="card-body">
+				<div class="d-flex gap-2">
+					<img src="{{ product.mainImage }}" alt="{{ product.name }} image" class="img-thumbnail thumb-img" style="width: 80px; height: 80px; object-fit: cover; cursor:pointer;" data-img="{{ product.mainImage }}">
+					{% for img in product.productImages %}
+						{% if img.url is not empty %}
+							<img src="{{ img.url }}" alt="{{ product.name }} image" class="img-thumbnail thumb-img" style="width: 80px; height: 80px; object-fit: cover; cursor:pointer;" data-img="{{ img.url }}">
+						{% endif %}
+					{% endfor %}
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="col-md-6">
+		<h1>{{ product.name }}</h1>
+		<p class="fs-4 fw-bold text-success">{{ product.price|number_format(2, '.', ' ') }} €</p>
+		<p><span class="text-muted">Catégorie :</span> {{ product.category.name }}</p>
+		<p><span class="text-muted">Vendeur :</span> {{ product.seller.name }}</p>
+        <form method="get" action="{{ path('cart_add', {'id': product.id}) }}" class="my-3">
+            <div class="input-group" style="max-width: 180px;">
+                <input type="number" name="quantity" value="1" min="1" class="form-control" style="max-width: 80px;">
+                <button type="submit" class="btn btn-primary">Ajouter au panier</button>
+            </div>
+        </form>
+		<div class="mt-4">
+			<h5>Description</h5>
+			<p>{{ product.description }}</p>
+		</div>
+	</div>
+</div>
+
+<!-- Modal Bootstrap pour le zoom avec navigation -->
+<div class="modal fade" id="zoomModal" tabindex="-1" aria-labelledby="zoomModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-fullscreen m-0" style="max-width:100vw; max-height:100vh;">
+		<div class="modal-content bg-transparent border-0 w-100 h-100">
+			<div class="modal-body p-0 w-100 h-100 d-flex justify-content-center align-items-center position-relative" style="overflow:hidden; min-height:100vh; min-width:100vw; background:rgba(10,10,10,0.95);">
+				<div class="position-relative d-flex justify-content-center align-items-center w-100 h-100">
+					<button type="button" class="btn-close-custom position-absolute" style="top: 24px; right: 32px; z-index: 40; background: rgba(30,30,30,0.4); width: 2.2rem; height: 2.2rem; border-radius: 50%; box-shadow: none; display: flex; align-items: center; justify-content: center; border: none;" data-bs-dismiss="modal" aria-label="Fermer">
+						<span style="display:block; width:1.2rem; height:1.2rem; position:relative;">
+							<span style="position:absolute; left:0; top:50%; width:100%; height:2px; background:#fff; border-radius:2px; transform:rotate(45deg) translateY(-50%);"></span>
+							<span style="position:absolute; left:0; top:50%; width:100%; height:2px; background:#fff; border-radius:2px; transform:rotate(-45deg) translateY(-50%);"></span>
+						</span>
+					</button>
+					<div class="zoom-img-container position-relative d-flex justify-content-center align-items-center" style="display:inline-flex;">
+						<button type="button" class="btn btn-light position-absolute" id="zoomPrevBtn" style="left: -60px; top: 50%; transform: translateY(-50%); z-index: 31; opacity: 0.92; background: rgba(255,255,255,0.85); border-radius: 50%; padding: 0.5rem 1.1rem; font-size:2rem; box-shadow:0 2px 8px #0003;">
+							&#8592;
+						</button>
+						<img src="{{ product.mainImage }}" id="zoomedImage" class="zoomed-img" style="max-width:100vw; max-height:100vh; object-fit:contain; margin:auto; display:block; box-shadow:0 0 32px #000a; border-radius:16px;">
+						<button type="button" class="btn btn-light position-absolute" id="zoomNextBtn" style="right: -60px; top: 50%; transform: translateY(-50%); z-index: 31; opacity: 0.92; background: rgba(255,255,255,0.85); border-radius: 50%; padding: 0.5rem 1.1rem; font-size:2rem; box-shadow:0 2px 8px #0003;">
+							&#8594;
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<style>
+	#zoomModal .modal-dialog {
+		width: 100vw;
+		height: 100vh;
+		margin: 0;
+		max-width: 100vw;
+		max-height: 100vh;
+	}
+	#zoomModal .modal-content {
+		background: transparent;
+		border: none;
+		width: 100vw;
+		height: 100vh;
+	}
+	#zoomModal .modal-body {
+		min-height: 100vh;
+		min-width: 100vw;
+		padding: 0;
+	}
+	.zoom-img-container {
+		position: relative;
+		display: inline-flex;
+		justify-content: center;
+		align-items: center;
+		width: auto;
+		height: auto;
+		max-width: 100vw;
+		max-height: 100vh;
+	}
+	#zoomModal .zoomed-img {
+		max-width: 100vw;
+		max-height: 100vh;
+		object-fit: contain;
+		margin: auto;
+		display: block;
+		box-shadow: 0 0 32px #000a;
+		border-radius: 16px;
+	}
+	#zoomModal .btn-close-custom {
+		position: absolute;
+		top: 24px;
+		right: 32px;
+		z-index: 40;
+		background: rgba(30, 30, 30, 0.4);
+		width: 2.2rem;
+		height: 2.2rem;
+		border-radius: 50%;
+		box-shadow: none;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border: none;
+		transition: background 0.2s;
+		cursor: pointer;
+	}
+	#zoomModal .btn-close-custom:hover {
+		background: rgba(30, 30, 30, 0.7);
+	}
+	#zoomModal .zoom-img-container #zoomPrevBtn {
+		left: -60px;
+		right: auto;
+		top: 50%;
+		transform: translateY(-50%);
+		z-index: 31;
+		opacity: 0.92;
+		background: rgba(255, 255, 255, 0.85);
+		border-radius: 50%;
+		padding: 0.5rem 1.1rem;
+		font-size: 2rem;
+		box-shadow: 0 2px 8px #0003;
+	}
+	#zoomModal .zoom-img-container #zoomNextBtn {
+		right: -60px;
+		left: auto;
+		top: 50%;
+		transform: translateY(-50%);
+		z-index: 31;
+		opacity: 0.92;
+		background: rgba(255, 255, 255, 0.85);
+		border-radius: 50%;
+		padding: 0.5rem 1.1rem;
+		font-size: 2rem;
+		box-shadow: 0 2px 8px #0003;
+	}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+	const mainImg = document.getElementById('mainProductImage');
+	const zoomedImg = document.getElementById('zoomedImage');
+	const thumbs = document.querySelectorAll('.thumb-img');
+	const zoomModalEl = document.getElementById('zoomModal');
+	let zoomModal = null;
+	// Créer un tableau de toutes les URLs d'images (main + miniatures)
+	const images = [
+		mainImg.src,
+		...Array.from(thumbs).slice(1).map(t => t.dataset.img)
+	];
+	let currentIndex = 0;
+
+	function showImage(idx) {
+		if (idx < 0) idx = images.length - 1;
+		if (idx >= images.length) idx = 0;
+		currentIndex = idx;
+		mainImg.src = images[idx];
+		zoomedImg.src = images[idx];
+	}
+
+	thumbs.forEach(function (thumb, i) {
+		thumb.addEventListener('click', function () {
+			showImage(i);
+		});
+	});
+
+	mainImg.addEventListener('click', function () {
+		zoomedImg.src = mainImg.src;
+		zoomModal = new bootstrap.Modal(zoomModalEl);
+		zoomModal.show();
+	});
+
+	// Navigation avec les flèches dans la modale
+	document.getElementById('zoomPrevBtn').addEventListener('click', function () {
+		showImage(currentIndex - 1);
+	});
+	document.getElementById('zoomNextBtn').addEventListener('click', function () {
+		showImage(currentIndex + 1);
+	});
+
+	// Forcer la suppression du backdrop Bootstrap à la fermeture
+	zoomModalEl.addEventListener('hidden.bs.modal', function () {
+		// Supprimer manuellement le backdrop s'il reste
+		document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+		document.body.classList.remove('modal-open');
+		document.body.style = '';
+	});
+});
+</script>
+{% endblock %}
