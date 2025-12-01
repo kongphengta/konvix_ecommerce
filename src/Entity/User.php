@@ -19,6 +19,19 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $phone = null;
+
+    public function getPhone(): ?string
+    {
+        return $this->phone;
+    }
+
+    public function setPhone(?string $phone): self
+    {
+        $this->phone = $phone;
+        return $this;
+    }
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $firstName = null;
 

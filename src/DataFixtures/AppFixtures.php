@@ -17,10 +17,12 @@ class AppFixtures extends Fixture
     {
         // Catégories
         $categories = [];
-        foreach ([
-            ['name' => 'Informatique', 'description' => 'Ordinateurs, accessoires, etc.'],
-            ['name' => 'Vêtements', 'description' => 'Mode et accessoires.'],
-        ] as $catData) {
+        foreach (
+            [
+                ['name' => 'Informatique', 'description' => 'Ordinateurs, accessoires, etc.'],
+                ['name' => 'Vêtements', 'description' => 'Mode et accessoires.'],
+            ] as $catData
+        ) {
             $category = new Category();
             $category->setName($catData['name']);
             $category->setDescription($catData['description']);
@@ -61,6 +63,7 @@ class AppFixtures extends Fixture
                     $product->setSeller($seller);
                     $product->setCategory($category);
                     $product->setMainImage($imgBase . "main$prodCount" . '/600/400');
+                    $product->setStock(0);
                     $manager->persist($product);
 
                     // 4 petites images

@@ -1,0 +1,67 @@
+
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="container my-5">
+	<div class="row g-4">
+		<div class="col-lg-8">
+			<div class="card p-4 mb-4">
+				<h4 class="mb-3"><i class="bi bi-file-earmark-text"></i> Récapitulatif de votre commande</h4>
+				<table class="table table-bordered">
+					<thead class="table-light">
+						<tr>
+							<th>Produit</th>
+							<th>Prix Unit.</th>
+							<th>Qté</th>
+							<th>Total</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% set total = 0 %}
+						{% for item in cart %}
+							<tr>
+								<td>{{ item.product.name }}</td>
+								<td>{{ item.product.price|number_format(2, ',', ' ') }} €</td>
+								<td>{{ item.quantity }}</td>
+								<td>{{ (item.product.price * item.quantity)|number_format(2, ',', ' ') }} €</td>
+							</tr>
+							{% set total = total + (item.product.price * item.quantity) %}
+						{% endfor %}
+					</tbody>
+				</table>
+				<div class="mt-3">
+					<div><strong>Sous-total HT :</strong> {{ (total / 1.2)|number_format(2, ',', ' ') }} €</div>
+					<div><strong>TVA (20%) :</strong> {{ (total - (total / 1.2))|number_format(2, ',', ' ') }} €</div>
+					<div><strong>Frais de livraison :</strong> {{ transporteur.price|default(0)|number_format(2, ',', ' ') }} €</div>
+					<div><strong>Mode de livraison :</strong> {{ transporteur.name|default('') }}</div>
+					<h4 class="mt-3">TOTAL TTC : {{ (total + transporteur.price|default(0))|number_format(2, ',', ' ') }} €</h4>
+				</div>
+				<form method="post" action="{{ path('checkout_confirm') }}" class="mt-4">
+					<button type="submit" class="btn btn-info btn-lg w-100" style="font-size:1.2em;">
+						<i class="bi bi-check2-square"></i> Valider ma commande
+					</button>
+				</form>
+				<div class="alert alert-info mt-3"><i class="bi bi-info-circle"></i> Vérifiez bien le contenu de votre commande et votre mode de livraison avant de valider.</div>
+			</div>
+		</div>
+		<div class="col-lg-4">
+			<div class="card p-3 mb-3">
+				<h5 class="mb-2"><i class="bi bi-geo-alt"></i> Adresse de livraison</h5>
+				{% if address %}
+					<div>{{ address.address }}<br>{{ address.city }}<br>{{ address.zip }}<br>{{ address.country }}</div>
+				{% else %}
+					<div class="text-danger">Aucune adresse renseignée.</div>
+				{% endif %}
+			</div>
+			<div class="card p-3 mb-3">
+				<h5 class="mb-2"><i class="bi bi-journal-text"></i> Adresse de facturation</h5>
+				{% if address %}
+					<div>{{ address.address }}<br>{{ address.city }}<br>{{ address.zip }}<br>{{ address.country }}</div>
+				{% else %}
+					<div class="text-danger">Aucune adresse renseignée.</div>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}

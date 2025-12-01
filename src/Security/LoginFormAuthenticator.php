@@ -54,10 +54,7 @@ class LoginFormAuthenticator extends AbstractLoginFormAuthenticator
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?RedirectResponse
     {
         // Redirection personnalisée après connexion
-        if ($targetPath = $this->getTargetPath($request->getSession(), $firewallName)) {
-            return new RedirectResponse($targetPath);
-        }
-        // Redirection vers l'espace client (le message flash sera ajouté dans le contrôleur)
+        // Toujours rediriger vers l’espace client après connexion
         return new RedirectResponse($this->urlGenerator->generate('app_profile'));
     }
 

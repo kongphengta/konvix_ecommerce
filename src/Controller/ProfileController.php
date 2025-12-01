@@ -12,6 +12,26 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class ProfileController extends AbstractController
 {
+    #[Route('/profile/edit', name: 'app_profile_edit')]
+    public function edit(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            $this->addFlash('danger', 'Vous devez être connecté pour modifier vos informations.');
+            return $this->redirectToRoute('app_login');
+        }
+        $form = $this->createForm(\App\Form\ProfileEditFormType::class, $user);
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->persist($user);
+            $entityManager->flush();
+            $this->addFlash('success', 'Vos informations ont été mises à jour.');
+            return $this->redirectToRoute('app_profile');
+        }
+        return $this->render('profile/edit.html.twig', [
+            'editForm' => $form->createView(),
+        ]);
+    }
     #[Route('/profile', name: 'app_profile')]
     public function index(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $entityManager): Response
     {

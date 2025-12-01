@@ -7,10 +7,24 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\HttpFoundation\File\File;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
+#[Vich\Uploadable]
 class Product
 {
+    // ...existing code...
+
+    public function getMainImagePath(): ?string
+    {
+        if ($this->mainImage && $this->imageFolder) {
+            return $this->imageFolder . '/' . $this->mainImage;
+        }
+        return $this->mainImage;
+    }
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -32,22 +46,81 @@ class Product
     #[ORM\JoinColumn(nullable: false)]
     private ?Seller $seller = null;
 
+
+    #[ORM\Column(type: Types::INTEGER)]
+    private ?int $stock = null;
+
     #[ORM\Column(length: 255)]
     private ?string $mainImage = null;
+
+    #[Vich\UploadableField(mapping: 'product_images', fileNameProperty: 'mainImage')]
+    private ?File $mainImageFile = null;
+    public function setMainImageFile(?File $file = null): void
+    {
+        $this->mainImageFile = $file;
+        if ($file) {
+            $this->updatedAt = new \DateTimeImmutable();
+        }
+    }
+
+    public function getMainImageFile(): ?File
+    {
+        return $this->mainImageFile;
+    }
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $imageFolder = null;
+
+    public function getImageFolder(): ?string
+    {
+        return $this->imageFolder;
+    }
+
+    public function setImageFolder(?string $imageFolder): self
+    {
+        $this->imageFolder = $imageFolder;
+        return $this;
+    }
+    public function getStock(): ?int
+    {
+        return $this->stock;
+    }
+
+    public function setStock(?int $stock): self
+    {
+        $this->stock = $stock;
+        return $this;
+    }
 
     #[ORM\ManyToOne(inversedBy: 'products')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Category $category = null;
 
+
     /**
      * @var Collection<int, ProductImage>
      */
-    #[ORM\OneToMany(targetEntity: ProductImage::class, mappedBy: 'product')]
+    #[ORM\OneToMany(targetEntity: ProductImage::class, mappedBy: 'product', orphanRemoval: true, cascade: ['remove'])]
     private Collection $productImages;
+
+    /**
+     * @var Collection<int, Review>
+     */
+    #[ORM\OneToMany(targetEntity: Review::class, mappedBy: 'product', orphanRemoval: true, cascade: ['remove'])]
+    private Collection $reviews;
 
     public function __construct()
     {
         $this->productImages = new ArrayCollection();
+        $this->reviews = new ArrayCollection();
+    }
+
+    /**
+     * @return Collection<int, Review>
+     */
+    public function getReviews(): Collection
+    {
+        return $this->reviews;
     }
 
     public function getId(): ?int
@@ -120,10 +193,9 @@ class Product
         return $this->mainImage;
     }
 
-    public function setMainImage(string $mainImage): static
+    public function setMainImage(?string $mainImage): static
     {
         $this->mainImage = $mainImage;
-
         return $this;
     }
 

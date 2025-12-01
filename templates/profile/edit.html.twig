@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier mes informations{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h2>Modifier mes informations</h2>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    {{ form_start(editForm) }}
+                        {{ form_row(editForm.firstName, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_row(editForm.lastName, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_row(editForm.email, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_row(editForm.phone, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_row(editForm.address, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_row(editForm.city, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_row(editForm.zip, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_row(editForm.country, {'attr': {'class': 'form-control'}}) }}
+                        <button class="btn btn-primary w-100 mt-3" type="submit">Enregistrer</button>
+                    {{ form_end(editForm) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

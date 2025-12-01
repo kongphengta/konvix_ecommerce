@@ -1,42 +1,89 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-<div class="container my-5">
-    <h1>Mon panier</h1>
-    {% if cart is empty %}
-        <div class="alert alert-info">Votre panier est vide.</div>
-    {% else %}
-        <table class="table table-bordered table-hover mt-4">
-            <thead class="table-light">
-                <tr>
-                    <th>Produit</th>
-                    <th>Quantité</th>
-                    <th>Prix unitaire</th>
-                    <th>Total</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% set total = 0 %}
-                {% for item in cart %}
-                    <tr>
-                        <td>{{ item.product.name }}</td>
-                        <td>{{ item.quantity }}</td>
-                        <td>{{ item.product.price|number_format(2, ',', ' ') }} €</td>
-                        <td>{{ (item.product.price * item.quantity)|number_format(2, ',', ' ') }} €</td>
-                        <td>
-                            <a href="{{ path('cart_remove', {'id': item.product.id}) }}" class="btn btn-danger btn-sm">Retirer</a>
-                        </td>
-                    </tr>
-                    {% set total = total + (item.product.price * item.quantity) %}
-                {% endfor %}
-            </tbody>
-        </table>
-        <div class="d-flex justify-content-between align-items-center mt-3">
-            <a href="{{ path('cart_clear') }}" class="btn btn-outline-danger">Vider le panier</a>
-            <h4>Total : {{ total|number_format(2, ',', ' ') }} €</h4>
-            <a href="{{ path('checkout_index') }}" class="btn btn-success">Passer la commande</a>
-        </div>
-    {% endif %}
-</div>
+	{% for label, messages in app.flashes %}
+		{% for message in messages %}
+			<div class="alert alert-{{ label == 'warning' ? 'warning' : (label == 'success' ? 'success' : 'info') }}">{{ message }}</div>
+		{% endfor %}
+	{% endfor %}
+	<div class="container my-5">
+		<h1>Mon panier</h1>
+		{% if cart is empty %}
+			<div class="alert alert-info">Votre panier est vide.</div>
+		{% else %}
+			<table class="table table-bordered table-hover mt-4">
+				<thead class="table-light">
+					<tr>
+						<th>Produit</th>
+						<th>Quantité</th>
+						<th>Prix unitaire</th>
+						<th>Total</th>
+						<th>Action</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% set total = 0 %}
+					{% for item in cart %}
+						<tr>
+							<td>{{ item.product.name }}</td>
+							<td>{{ item.quantity }}</td>
+							<td>{{ item.product.price|number_format(2, ',', ' ') }}
+								€</td>
+							<td>{{ (item.product.price * item.quantity)|number_format(2, ',', ' ') }}
+								€</td>
+							<td>
+								<a href="{{ path('cart_remove', {'id': item.product.id}) }}" class="btn btn-danger btn-sm">Retirer</a>
+							</td>
+						</tr>
+						{% set total = total + (item.product.price * item.quantity) %}
+					{% endfor %}
+				</tbody>
+			</table>
+			<div class="row mt-4">
+				<div class="col-md-7 col-12 mb-3 mb-md-0">
+					<a href="{{ path('cart_clear') }}" class="btn btn-outline-danger">Vider le panier</a>
+				</div>
+				<div class="col-md-5 col-12">
+					<form method="post" action="{{ path('cart_checkout') }}">
+						<div class="card p-3 shadow-sm">
+							<h5 class="mb-3">Choisissez votre mode de livraison</h5>
+							{% set transporteurs = [
+                            {'id': 'colissimo', 'name': 'Colissimo', 'price': 5.90, 'desc': 'Livraison à domicile sous 2 jours ouvrés.'},
+                            {'id': 'mondial', 'name': 'Mondial Relay', 'price': 4.50, 'desc': 'Livraison en point relais sous 3 à 5 jours.'},
+                            {'id': 'chrono', 'name': 'Chronopost', 'price': 12.00, 'desc': 'Express à domicile sous 24h.'}
+                        ] %}
+							{% set selected = selectedTransporteur|default('') %}
+							{% for t in transporteurs %}
+								<div class="form-check mb-2">
+									<input class="form-check-input" type="radio" name="transporteur" id="t_{{ t.id }}" value="{{ t.id }}" {% if selected == t.id %} checked {% endif %}>
+									<label class="form-check-label" for="t_{{ t.id }}">
+										<span class="fw-bold">{{ t.name }}</span>
+										<span class="badge bg-primary ms-2">{{ t.price|number_format(2, ',', ' ') }}
+											€</span><br>
+										<span class="text-muted" style="font-size:0.95em;">{{ t.desc }}</span>
+									</label>
+								</div>
+							{% endfor %}
+							<div class="mt-3">
+								{% set frais = selected != '' ? (transporteurs|filter(t => t.id == selected)|first.price) : 0 %}
+								<div class="mb-2">Frais de livraison :
+									<span class="fw-bold text-warning">{{ frais|number_format(2, ',', ' ') }}
+										€</span>
+								</div>
+								<div class="mb-2">Total TTC :
+									<span class="fw-bold text-success">{{ (total + frais)|number_format(2, ',', ' ') }}
+										€</span>
+								</div>
+							</div>
+							<button type="submit" class="btn btn-success w-100 mt-2">Passer la commande</button>
+							<div class="d-flex flex-column flex-md-row gap-2 mt-3">
+								<a href="/" class="btn btn-outline-primary flex-fill"><i class="bi bi-arrow-left"></i> Continuer mes achats</a>
+								<a href="{{ path('cart_clear') }}" class="btn btn-outline-danger flex-fill"><i class="bi bi-trash"></i> Vider le panier</a>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+		{% endif %}
+	</div>
 {% endblock %}

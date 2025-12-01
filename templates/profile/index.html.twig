@@ -14,11 +14,13 @@
                             <li><strong>Nom :</strong> {{ user.lastName }}</li>
                             <li><strong>Prénom :</strong> {{ user.firstName }}</li>
                             <li><strong>Email :</strong> {{ user.email }}</li>
+                            <li><strong>Téléphone :</strong> {{ user.phone }}</li>
                             <li><strong>Adresse :</strong> {{ user.address }}</li>
                             <li><strong>Ville :</strong> {{ user.city }}</li>
                             <li><strong>Code postal :</strong> {{ user.zip }}</li>
                             <li><strong>Pays :</strong> {{ user.country }}</li>
                         </ul>
+                        <a href="{{ path('app_profile_edit') }}" class="btn btn-outline-primary btn-sm mt-3"><i class="bi bi-pencil"></i> Modifier mes informations</a>
                     </div>
                 </div>
             </div>
@@ -35,6 +37,35 @@
                             {{ form_end(changePasswordForm) }}
                         {% else %}
                             <a href="{{ path('app_profile_password') }}" class="btn btn-outline-secondary btn-sm mt-3">Changer mon mot de passe</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Adresse de livraison</h5>
+                        {% if user.address %}
+                            <div>{{ user.firstName }} {{ user.lastName }}<br>{{ user.address }}<br>{{ user.zip }} {{ user.city }}<br>{{ user.country }}<br>
+                            <span class="fw-bold">Tél :</span> {{ user.phone }}</div>
+                        {% else %}
+                            <div class="text-danger">Aucune adresse renseignée.</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Adresse de facturation</h5>
+                        {% if user.address %}
+                            <div>{{ user.firstName }} {{ user.lastName }}<br>{{ user.address }}<br>{{ user.zip }} {{ user.city }}<br>{{ user.country }}<br>
+                            <span class="fw-bold">Tél :</span> {{ user.phone }}</div>
+                        {% else %}
+                            <div class="text-danger">Aucune adresse renseignée.</div>
                         {% endif %}
                     </div>
                 </div>

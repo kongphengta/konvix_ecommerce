@@ -1,0 +1,18 @@
+# Autorise l'accès aux fichiers uploadés
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [QSA,L]
+</IfModule>
+
+# Autorise l'accès direct aux fichiers dans /uploads
+<Directory "uploads">
+    AllowOverride All
+    Require all granted
+</Directory>
+
+# Autorise l'accès direct aux fichiers uploadés
+<FilesMatch \"\\.(jpg|jpeg|png|gif|webp|svg)$\">
+    Require all granted
+</FilesMatch>

@@ -1,0 +1,13 @@
+/* assets/styles/app.css */
+@import '~bootstrap/dist/css/bootstrap.min.css';
+body {
+	background-color: lightgray;
+}
+
+/* Exemple de style Bootstrap personnalisé */
+.custom-title {
+	color: #007bff;
+	font-weight: bold;
+	font-size: 2rem;
+}
+
