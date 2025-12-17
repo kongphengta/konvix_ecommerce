@@ -88,11 +88,72 @@
 					</span>
 					<hr class="my-3">
 					<div class="d-flex align-items-center gap-3 mb-3">
-						<button class="btn btn-primary fw-semibold" type="button">
-							<i class="bi bi-pencil-square me-2"></i>Donner mon avis
-						</button>
+						{% if app.user and not alreadyReviewed %}
+							<a href="#review-form" class="btn btn-primary fw-semibold">
+								<i class="bi bi-pencil-square me-2"></i>Donner mon avis
+							</a>
+						{% endif %}
 						<span style="color: #0072ff; font-size: 1.08em; font-weight: 500; letter-spacing: 0.01em;">Votre avis aide les autres clients<br>et améliore nos produits !</span>
 					</div>
+					{% if app.user and not alreadyReviewed %}
+						<div id="review-form" class="mb-4">
+							<div class="card shadow-sm border-0 mb-3" style="max-width: 480px;">
+								<div class="card-header bg-light border-bottom-0 pb-2">
+									<span class="fw-bold fs-5">
+										<i class="bi bi-chat-left-text me-2"></i>Laisser un avis sur ce produit</span>
+								</div>
+								<div class="card-body pt-3">
+									{{ form_start(reviewForm) }}
+									<div class="mb-3">
+										<label class="form-label fw-semibold">Note</label>
+										<div class="d-flex gap-2 align-items-center" id="star-rating-review">
+											{% for idx, choice in reviewForm.rating %}
+												<input type="radio" id="star{{ idx }}" name="{{ choice.vars.full_name }}" value="{{ choice.vars.value }}" {% if choice.vars.checked %} checked {% endif %} style="display:none;">
+												<label for="star{{ idx }}" style="cursor:pointer; font-size:2em; color:#ffc107; margin-bottom:0;">
+													<i class="bi bi-star{% if choice.vars.checked %}-fill{% endif %}"></i>
+												</label>
+											{% endfor %}
+											{{ form_widget(reviewForm.rating, {'attr': {'class': 'd-none', 'style': 'display:none;'}}) }}
+											{{ form_errors(reviewForm.rating) }}
+										</div>
+									</div>
+									<script>
+										document.addEventListener('DOMContentLoaded', function () {
+const stars = document.querySelectorAll('#star-rating-review label i');
+const radios = document.querySelectorAll('#star-rating-review input[type="radio"]');
+radios.forEach((radio, idx) => {
+radio.addEventListener('change', function () {
+stars.forEach((star, sidx) => {
+if (sidx <= idx) {
+star.classList.add('bi-star-fill');
+star.classList.remove('bi-star');
+} else {
+star.classList.remove('bi-star-fill');
+star.classList.add('bi-star');
+}
+});
+});
+});
+});
+									</script>
+									<div class="mb-3">
+										<label class="form-label fw-semibold">Votre avis</label>
+										{{ form_widget(reviewForm.comment, {'attr': {'class': 'form-control', 'rows': 4, 'placeholder': 'Partagez votre expérience avec ce produit...'}}) }}
+										{{ form_errors(reviewForm.comment) }}
+									</div>
+									<div class="d-flex justify-content-end">
+										<button type="submit" class="btn btn-success px-4">
+											<i class="bi bi-send me-1"></i>Envoyer mon avis
+										</button>
+									</div>
+									{{ form_rest(reviewForm) }}
+									{{ form_end(reviewForm) }}
+								</div>
+							</div>
+						</div>
+					{% elseif alreadyReviewed %}
+						<div class="alert alert-info">Vous avez déjà laissé un avis pour ce produit.</div>
+					{% endif %}
 					<!-- Description déplacée dans un bloc horizontal sous la grille -->
 				</div>
 				<!-- Colonne droite : stock, panier, paiement -->
@@ -132,6 +193,17 @@
 						Description du produit
 					</h5>
 					{{ product.description |raw }}
+
+					{# Formulaire de suppression produit avec CSRF #}
+					{% if is_granted('ROLE_SELLER') and product.seller == app.user %}
+						<form method="post" action="{{ path('seller_product_delete', {'id': product.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce produit ?');" style="display:inline;">
+							<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ product.id) }}">
+							<button class="btn btn-danger mt-3" type="submit">
+								<i class="bi bi-trash"></i>
+								Supprimer ce produit
+							</button>
+						</form>
+					{% endif %}
 				</div>
 			</div>
 		</div>

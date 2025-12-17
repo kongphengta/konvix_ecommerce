@@ -13,9 +13,39 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use Vich\UploaderBundle\Form\Type\VichImageType;
 use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
+use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 
 class ProductCrudController extends AbstractCrudController
 {
+    public function configureActions(Actions $actions): Actions
+    {
+        $validate = Action::new('validate', 'Valider', 'fa fa-check')
+            ->linkToCrudAction('validateProduct')
+            ->displayIf(fn(Product $product) => !$product->isValidated());
+        return $actions
+            ->add('index', $validate)
+            ->add('detail', $validate);
+    }
+
+    public function validateProduct(AdminContext $context): RedirectResponse
+    {
+        /** @var Product $product */
+        $product = $context->getEntity()->getInstance();
+        $product->setIsValidated(true);
+        $this->getDoctrine()->getManager()->flush();
+        $this->addFlash('success', 'Produit validé avec succès.');
+        $url = $this->get(AdminUrlGenerator::class)
+            ->setController(self::class)
+            ->setAction('index')
+            ->generateUrl();
+        return $this->redirect($url);
+    }
+
     public static function getEntityFqcn(): string
     {
         return Product::class;
@@ -40,7 +70,7 @@ class ProductCrudController extends AbstractCrudController
             TextField::new('imageFolder'),
             AssociationField::new('category'),
             AssociationField::new('seller'),
-            // Ajoute ici d'autres champs si besoin
+            BooleanField::new('isValidated', 'Validé'),
         ];
     }
 }

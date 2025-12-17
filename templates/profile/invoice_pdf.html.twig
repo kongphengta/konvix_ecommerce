@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Facture - Commande #{{ order.id }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 14px; }
+        .header { background: #14287b; color: #fff; padding: 12px; margin-bottom: 18px; }
+        .section { margin-bottom: 18px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 18px; }
+        th, td { border: 1px solid #ddd; padding: 8px; }
+        th { background: #f5f5f5; }
+        .total { font-weight: bold; color: #1563d7; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>Facture - Commande #{{ order.id }}</h2>
+    </div>
+    <div class="section">
+        <strong>Date :</strong> {{ order.createdAt|date('d/m/Y H:i') }}<br>
+        <strong>Client :</strong> {{ user.firstName }} {{ user.lastName }}<br>
+        <strong>Email :</strong> {{ user.email }}<br>
+    </div>
+    <div class="section">
+        <strong>Adresse de livraison :</strong><br>
+        {{ user.address }}<br>
+        {{ user.zip }} {{ user.city }}<br>
+        {{ user.country }}<br>
+        <strong>Tél :</strong> {{ user.phone }}
+    </div>
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Facture - Commande #{{ order.id }}</title>
+        <style>
+            body { font-family: Arial, sans-serif; font-size: 14px; }
+            .header {
+                background: #14287b;
+                color: #fff;
+                padding: 12px 24px;
+                margin-bottom: 18px;
+                display: flex;
+                align-items: center;
+            }
+            .header img {
+                height: 48px;
+                margin-right: 24px;
+            }
+            .section { margin-bottom: 18px; }
+            .flex-row { display: flex; justify-content: space-between; }
+            .bloc {
+                background: #f5f5f5;
+                border-radius: 6px;
+                padding: 12px 18px;
+                margin-bottom: 10px;
+                width: 48%;
+            }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 18px; }
+            th, td { border: 1px solid #ddd; padding: 8px; }
+            th { background: #f5f5f5; }
+            tr:nth-child(even) { background: #f9f9f9; }
+            .total { font-weight: bold; color: #1563d7; font-size: 1.1em; }
+            .footer { font-size: 12px; color: #888; margin-top: 24px; text-align: center; }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <img src="{{ absolute_url(asset('uploads/product_images/konvixlogo.png')) }}" alt="Konvix Logo">
+            <h2 style="margin:0;">Facture - Commande #{{ order.id }}</h2>
+        </div>
+        <div class="flex-row">
+            <div class="bloc">
+                <strong>Vendeur :</strong><br>
+                KONVIX TECHNOLOGY<br>
+                30, allée des romarins, Montée de la belle France<br>
+                13015 Marseille, France<br>
+                SIRET : 123 456 789 00012<br>
+                TVA Intracommunautaire : FR66538566134<br>
+                Email : serviceclient@konvix.com<br>
+            </div>
+            <div class="bloc">
+                <strong>Client :</strong><br>
+                {{ user.firstName }} {{ user.lastName }}<br>
+                {{ user.address }}<br>
+                {{ user.zip }} {{ user.city }}<br>
+                {{ user.country }}<br>
+                Tél : {{ user.phone }}<br>
+                Email : {{ user.email }}
+            </div>
+        </div>
+        <div class="section">
+            <strong>Date :</strong> {{ order.createdAt|date('d/m/Y H:i') }}<br>
+            <strong>Mode de livraison :</strong> {{ order.transporteur }}<br>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Produit</th>
+                    <th>Quantité</th>
+                    <th>Prix unitaire</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for item in order.getOrderItems() %}
+                <tr style="background: {{ loop.index is odd ? '#fff' : '#f9f9f9' }};">
+                    <td>{{ item.product.name }}</td>
+                    <td style="text-align:center;">{{ item.quantity }}</td>
+                    <td style="text-align:right;">{{ item.product.price|number_format(2, ',', ' ') }} €</td>
+                    <td style="text-align:right;">{{ (item.product.price * item.quantity)|number_format(2, ',', ' ') }} €</td>
+                </tr>
+            {% else %}
+                <tr><td colspan="4" style="text-align:center;">Aucun produit</td></tr>
+            {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="2" style="border:none;"></td>
+                    <th style="text-align:right;">Sous-total HT :</th>
+                    <td style="text-align:right;">{{ (order.total / 1.2)|number_format(2, ',', ' ') }} €</td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="border:none;"></td>
+                    <th style="text-align:right;">TVA (20%) :</th>
+                    <td style="text-align:right;">{{ (order.total - (order.total / 1.2))|number_format(2, ',', ' ') }} €</td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="border:none;"></td>
+                    <th style="text-align:right;">Frais de livraison :</th>
+                    <td style="text-align:right;">{{ order.fraisLivraison|number_format(2, ',', ' ') }} €</td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="border:none;"></td>
+                    <th style="text-align:right; color:#1563d7;">TOTAL TTC :</th>
+                    <td style="text-align:right; color:#1563d7; font-weight:bold;">{{ (order.total + order.fraisLivraison)|number_format(2, ',', ' ') }} €</td>
+                </tr>
+            </tfoot>
+        </table>
+        <div class="footer" style="margin-top:40px;">
+            <strong>Merci pour votre confiance.</strong><br>
+            Facture générée automatiquement – <span style="color:#1563d7;">www.konvix.com</span>
+        </div>
+    </body>
+    </html>

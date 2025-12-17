@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes commandes - Espace vendeur{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <h1 class="mb-4">Commandes reçues sur mes produits</h1>
+    {% if orderItems is empty %}
+        <div class="alert alert-info">Aucune commande reçue sur vos produits pour le moment.</div>
+    {% else %}
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Date</th>
+                    <th>Produit</th>
+                    <th>Client</th>
+                    <th>Quantité</th>
+                    <th>Prix unitaire</th>
+                    <th>Total ligne</th>
+                    <th>Statut commande</th>
+                    <th>Détail</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in orderItems %}
+                    <tr>
+                        <td>{{ item.oderRef.createdAt|date('d/m/Y H:i') }}</td>
+                        <td>{{ item.product.name }}</td>
+                        <td>{{ item.oderRef.user.email }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>{{ item.price|number_format(2, '.', ' ') }} €</td>
+                        <td>{{ (item.price * item.quantity)|number_format(2, '.', ' ') }} €</td>
+                        <td>{{ item.oderRef.status }}</td>
+                        <td>
+                            <a href="{{ path('seller_order_detail', {id: item.oderRef.id}) }}" class="btn btn-sm btn-info">Voir le détail</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+    <a href="{{ path('seller_dashboard') }}" class="btn btn-secondary mt-3">Retour espace vendeur</a>
+</div>
+{% endblock %}

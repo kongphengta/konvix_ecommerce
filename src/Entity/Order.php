@@ -23,8 +23,15 @@ class Order
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
+
     #[ORM\Column]
     private ?float $total = null;
+
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $fraisLivraison = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $transporteur = null;
 
     #[ORM\Column(length: 30)]
     private ?string $status = null;
@@ -69,6 +76,7 @@ class Order
         return $this;
     }
 
+
     public function getTotal(): ?float
     {
         return $this->total;
@@ -77,7 +85,28 @@ class Order
     public function setTotal(float $total): static
     {
         $this->total = $total;
+        return $this;
+    }
 
+    public function getFraisLivraison(): ?float
+    {
+        return $this->fraisLivraison;
+    }
+
+    public function setFraisLivraison(?float $fraisLivraison): static
+    {
+        $this->fraisLivraison = $fraisLivraison;
+        return $this;
+    }
+
+    public function getTransporteur(): ?string
+    {
+        return $this->transporteur;
+    }
+
+    public function setTransporteur(?string $transporteur): static
+    {
+        $this->transporteur = $transporteur;
         return $this;
     }
 

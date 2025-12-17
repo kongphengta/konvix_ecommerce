@@ -1,0 +1,80 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Toutes mes commandes{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h2 class="mb-4">Toutes mes commandes</h2>
+    <div class="card mb-4">
+        <div class="card-body">
+            {% if orders|length > 0 %}
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>N° Commande</th>
+                            <th>Date</th>
+                            <th>Produit</th>
+                            <th>Image</th>
+                            <th>Quantité</th>
+                            <th>Total</th>
+                            <th>Transporteur</th>
+                            <th>Frais livraison</th>
+                            <th>Statut</th>
+                            <th>Facture</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for order in orders %}
+                        <tr>
+                            <td>{{ order.id ?? '-' }}</td>
+                            <td>{{ order.createdAt ? order.createdAt|date('d/m/Y H:i') : '' }}</td>
+                            <td>
+                                {% if order.items is defined %}
+                                    {% for item in order.items %}
+                                        {{ item.product.name }}<br>
+                                    {% endfor %}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if order.items is defined %}
+                                    {% for item in order.items %}
+                                        {% if item.product.mainImage is defined %}
+                                            <img src="{{ item.product.mainImage }}" alt="{{ item.product.name }}" style="height:40px; max-width:60px; object-fit:contain; margin-bottom:4px;">
+                                        {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if order.items is defined %}
+                                    {% for item in order.items %}
+                                        {{ item.quantity }}<br>
+                                    {% endfor %}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>{{ order.total|number_format(2, ',', ' ') }} €</td>
+                            <td>{{ order.transporteur }}</td>
+                            <td>{{ order.fraisLivraison|number_format(2, ',', ' ') }} €</td>
+                            <td>{{ order.status }}</td>
+                            <td>
+                                <a href="{{ path('app_order_invoice', {'id': order.id}) }}" class="btn btn-sm btn-outline-primary">PDF</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>Aucune commande pour le moment.</p>
+            {% endif %}
+            <div class="mt-3">
+                <a href="{{ path('app_profile') }}" class="btn btn-secondary">Retour à mon espace client</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

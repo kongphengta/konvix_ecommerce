@@ -60,77 +60,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    #[ORM\Column(type: 'json')]
+    private array $roles = [];
 
-    /**
-     * @var Collection<int, Role>
-     */
-    #[ORM\ManyToMany(targetEntity: Role::class)]
-    #[ORM\JoinTable(name: "user_role")]
-    private Collection $roles;
-
-    /**
-     * Remplace tous les rôles actuels par ceux fournis (ManyToMany)
-     */
+    public function getRoles(): array
+    {
+        // Garantit que chaque utilisateur a au moins ROLE_USER
+        $roles = $this->roles;
+        $roles[] = 'ROLE_USER';
+        return array_unique($roles);
+    }
     public function setRoles(array $roles): self
     {
-        // On vide d'abord la collection
-        foreach ($this->roles as $role) {
-            $this->removeRole($role);
-        }
-        // Puis on ajoute chaque rôle fourni
-        foreach ($roles as $role) {
-            if ($role instanceof Role) {
-                $this->addRole($role);
-            } elseif (is_string($role)) {
-                // Si on passe un slug, on peut ignorer ou lever une exception, ou gérer la récupération de l'entité Role
-                // Ici, on ignore (Doctrine ne peut pas deviner l'entité à partir du slug sans EntityManager)
-            }
-        }
+        $this->roles = $roles;
         return $this;
     }
 
     public function __construct()
     {
-        $this->roles = new ArrayCollection();
-        // ...autres initialisations...
         $this->orders = new ArrayCollection();
     }
 
-    /**
-     * Pour Symfony : retourne un array de slugs ou noms de rôles
-     */
-    public function getRoles(): array
-    {
-        $roleNames = [];
-        foreach ($this->roles as $role) {
-            $roleNames[] = $role->getSlug(); // ou getName() selon ta logique
-        }
-        // Toujours garantir au moins ROLE_USER
-        $roleNames[] = 'ROLE_USER';
-        return array_unique($roleNames);
-    }
-
-    public function addRole(Role $role): static
-    {
-        if (!$this->roles->contains($role)) {
-            $this->roles->add($role);
-        }
-        return $this;
-    }
-
-    public function removeRole(Role $role): static
-    {
-        $this->roles->removeElement($role);
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Role>
-     */
-    public function getRoleEntities(): Collection
-    {
-        return $this->roles;
-    }
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $address = null;
 

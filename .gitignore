@@ -16,3 +16,8 @@ public/uploads/
 npm-debug.log
 yarn-error.log
 ###< symfony/webpack-encore-bundle ###
+
+###> tests documentation ###
+/tests/_output/
+/tests_doc
+###< tests documentation ###

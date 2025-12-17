@@ -8,9 +8,58 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
 
 class SellerController extends AbstractController
 {
+    #[Route('/seller/products', name: 'seller_products')]
+    #[IsGranted('ROLE_SELLER')]
+    public function listProducts(EntityManagerInterface $em): Response
+    {
+        $user = $this->getUser();
+        $products = $em->getRepository(\App\Entity\Product::class)->findBy(['seller' => $user->getSeller()]);
+        return $this->render('seller/products.html.twig', [
+            'products' => $products
+        ]);
+    }
+
+    #[Route('/seller/product/{id}/edit', name: 'seller_product_edit')]
+    #[IsGranted('ROLE_SELLER')]
+    public function editProduct(\App\Entity\Product $product, Request $request, EntityManagerInterface $em): Response
+    {
+        $user = $this->getUser();
+        if ($product->getSeller() !== $user->getSeller()) {
+            throw $this->createAccessDeniedException('Vous ne pouvez éditer que vos propres produits.');
+        }
+        $form = $this->createForm(\App\Form\ProductType::class, $product);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->flush();
+            $this->addFlash('success', 'Produit modifié avec succès.');
+            return $this->redirectToRoute('seller_products');
+        }
+
+        return $this->render('seller/edit_product.html.twig', [
+            'form' => $form->createView(),
+            'product' => $product
+        ]);
+    }
+
+    #[Route('/seller/product/{id}/delete', name: 'seller_product_delete', methods: ['POST'])]
+    #[IsGranted('ROLE_SELLER')]
+    public function deleteProduct(\App\Entity\Product $product, EntityManagerInterface $em): RedirectResponse
+    {
+        $user = $this->getUser();
+        if ($product->getSeller() !== $user->getSeller()) {
+            throw $this->createAccessDeniedException('Vous ne pouvez supprimer que vos propres produits.');
+        }
+        $em->remove($product);
+        $em->flush();
+        $this->addFlash('success', 'Produit supprimé avec succès.');
+        return $this->redirectToRoute('seller_products');
+    }
     #[Route('/become-seller', name: 'app_become_seller')]
     #[IsGranted('ROLE_USER')]
     public function becomeSeller(EntityManagerInterface $entityManager): RedirectResponse
@@ -27,6 +76,9 @@ class SellerController extends AbstractController
             if ($user->getSeller() === null) {
                 $seller = new Seller();
                 $seller->setUser($user);
+                // Définir un nom par défaut pour le vendeur (ex: nom d'utilisateur ou email)
+                $defaultName = $user->getUsername() ?? $user->getEmail() ?? 'Vendeur';
+                $seller->setName($defaultName);
                 $entityManager->persist($seller);
             }
             $entityManager->persist($user);
@@ -34,5 +86,118 @@ class SellerController extends AbstractController
             $this->addFlash('success', 'Vous êtes maintenant vendeur !');
         }
         return $this->redirectToRoute('app_home');
+    }
+
+    #[Route('/seller/dashboard', name: 'seller_dashboard')]
+    #[IsGranted('ROLE_SELLER')]
+    public function dashboard(): Response
+    {
+        return $this->render('seller/dashboard.html.twig');
+    }
+
+    #[Route('/seller/orders', name: 'seller_orders')]
+    #[IsGranted('ROLE_SELLER')]
+    public function listOrders(EntityManagerInterface $em): Response
+    {
+        $user = $this->getUser();
+        $seller = $user->getSeller();
+        // Récupérer tous les OrderItems liés à ce vendeur
+        $orderItems = $em->getRepository(\App\Entity\OrderItem::class)
+            ->createQueryBuilder('oi')
+            ->join('oi.product', 'p')
+            ->join('oi.oderRef', 'o')
+            ->where('p.seller = :seller')
+            ->setParameter('seller', $seller)
+            ->orderBy('o.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        return $this->render('seller/orders.html.twig', [
+            'orderItems' => $orderItems
+        ]);
+    }
+    #[Route('/seller/order/{id}', name: 'seller_order_detail')]
+    #[IsGranted('ROLE_SELLER')]
+    public function orderDetail(\App\Entity\Order $order, EntityManagerInterface $em): Response
+    {
+        $user = $this->getUser();
+        $seller = $user->getSeller();
+        // Vérifier que le vendeur a au moins un produit dans cette commande
+        $hasProduct = false;
+        foreach ($order->getOrderItems() as $item) {
+            if ($item->getProduct()->getSeller() === $seller) {
+                $hasProduct = true;
+                break;
+            }
+        }
+        if (!$hasProduct) {
+            throw $this->createAccessDeniedException('Vous ne pouvez voir que les commandes contenant vos produits.');
+        }
+        return $this->render('seller/order_detail.html.twig', [
+            'order' => $order
+        ]);
+    }
+
+    #[Route('/seller/order/{id}/status', name: 'seller_order_status', methods: ['POST'])]
+    #[IsGranted('ROLE_SELLER')]
+    public function changeOrderStatus(\App\Entity\Order $order, EntityManagerInterface $em): Response
+    {
+        $user = $this->getUser();
+        $seller = $user->getSeller();
+        // Vérifier que le vendeur a au moins un produit dans cette commande
+        $hasProduct = false;
+        foreach ($order->getOrderItems() as $item) {
+            if ($item->getProduct()->getSeller() === $seller) {
+                $hasProduct = true;
+                break;
+            }
+        }
+        if (!$hasProduct) {
+            throw $this->createAccessDeniedException('Vous ne pouvez modifier que les commandes contenant vos produits.');
+        }
+        $status = $_POST['status'] ?? null;
+        $allowed = ['En préparation', 'Expédiée', 'Livrée'];
+        if ($status && in_array($status, $allowed, true)) {
+            $order->setStatus($status);
+            $em->flush();
+            $this->addFlash('success', 'Statut de la commande mis à jour.');
+        }
+        return $this->redirectToRoute('seller_order_detail', ['id' => $order->getId()]);
+    }
+
+    #[Route('/seller/product/new', name: 'seller_product_new')]
+    #[IsGranted('ROLE_SELLER')]
+    public function newProduct(Request $request, EntityManagerInterface $em): Response
+    {
+        $user = $this->getUser();
+        $seller = $user->getSeller();
+        // Création automatique du Seller si besoin
+        if (!$seller && in_array('ROLE_SELLER', $user->getRoles(), true)) {
+            $seller = new \App\Entity\Seller();
+            $seller->setUser($user);
+            $seller->setName($user->getUserIdentifier() ?? $user->getEmail() ?? 'Vendeur');
+            $seller->setCreatedAt(new \DateTimeImmutable());
+            $em->persist($seller);
+            $em->flush();
+            // Rafraîchir l'utilisateur pour avoir le seller
+            $em->refresh($user);
+            $seller = $user->getSeller();
+        }
+        $product = new \App\Entity\Product();
+        $form = $this->createForm(\App\Form\ProductType::class, $product);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $product->setSeller($seller); // S'assure que le vendeur est bien associé
+            $product->setCreatedAt(new \DateTimeImmutable());
+            $em->persist($product);
+            $em->flush();
+            $this->addFlash('success', 'Produit ajouté avec succès.');
+            return $this->redirectToRoute('seller_products');
+        }
+
+        return $this->render('seller/new_product.html.twig', [
+            'form' => $form->createView(),
+        ]);
     }
 }

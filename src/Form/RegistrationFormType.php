@@ -29,10 +29,6 @@ class RegistrationFormType extends AbstractType
                 'label' => 'Email',
                 'required' => true,
             ])
-            ->add('phone', null, [
-                'label' => 'Téléphone',
-                'required' => true,
-            ])
             ->add('plainPassword', PasswordType::class, [
                 'label' => 'Mot de passe',
                 'mapped' => false,
@@ -58,6 +54,11 @@ class RegistrationFormType extends AbstractType
                     ]),
                 ],
             ])
+            ->add('phone', null, [
+                'label' => 'Téléphone',
+                'required' => true,
+            ])
+
             ->add('agreeTerms', CheckboxType::class, [
                 'label' => 'Accepter les conditions',
                 'mapped' => false,

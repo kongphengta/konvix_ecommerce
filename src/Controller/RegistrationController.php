@@ -46,7 +46,10 @@ class RegistrationController extends AbstractController
     {
         $user = new User();
         // Ajoute le rôle ROLE_USER par défaut à chaque nouvel utilisateur
-        $user->setRoles(['ROLE_USER']);
+        $roleUser = $entityManager->getRepository(\App\Entity\Role::class)->findOneBy(['slug' => 'ROLE_USER']);
+        if ($roleUser) {
+            $user->setRoles(array_merge($user->getRoles(), [$roleUser->getSlug()]));
+        }
         $form = $this->createForm(RegistrationFormType::class, $user);
         $form->handleRequest($request);
 

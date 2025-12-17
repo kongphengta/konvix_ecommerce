@@ -1,0 +1,62 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+	<div class="container py-5">
+		<h2 class="mb-4">Récapitulatif de votre commande</h2>
+		<table class="table table-bordered">
+			<thead>
+				<tr>
+					<th>Produit</th>
+					<th>Prix unitaire</th>
+					<th>Quantité</th>
+					<th>Total</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% set total = 0 %}
+				{% for item in cart %}
+					<tr>
+						<td>{{ item.product.name }}</td>
+						<td>{{ item.product.price|number_format(2, '.', ' ') }}
+							€</td>
+						<td>{{ item.quantity }}</td>
+						<td>{{ (item.product.price * item.quantity)|number_format(2, '.', ' ') }}
+							€</td>
+					</tr>
+					{% set total = total + (item.product.price * item.quantity) %}
+				{% endfor %}
+			</tbody>
+		</table>
+		<div class="mt-3">
+			<div class="row mb-1" style="color:#6c757d; font-size:1.08em;">
+				<div class="col-7">Sous-total HT :</div>
+				<div class="col-5 text-end">{{ (total / 1.2)|number_format(2, ',', ' ') }}
+					€</div>
+			</div>
+			<div class="row mb-1" style="color:#6c757d; font-size:1.08em;">
+				<div class="col-7">TVA (20%) :</div>
+				<div class="col-5 text-end">{{ (total - (total / 1.2))|number_format(2, ',', ' ') }}
+					€</div>
+			</div>
+			<div class="row mb-1" style="color:#6c757d; font-size:1.08em;">
+				<div class="col-7">Frais de livraison :</div>
+				<div class="col-5 text-end">{{ order.fraisLivraison|number_format(2, ',', ' ') }}
+					€</div>
+			</div>
+			<div class="row mb-2" style="color:#6c757d; font-size:1.08em;">
+				<div class="col-7">Mode de livraison :</div>
+				<div class="col-5 text-end">
+					<span style="font-weight:600; color:#222;">{{ order.transporteur }}</span>
+				</div>
+			</div>
+			<hr style="margin:10px 0 14px 0;">
+			<div class="row align-items-center">
+				<div class="col-7" style="font-size:1.13em; font-weight:700; color:#14287b;">TOTAL TTC :</div>
+				<div class="col-5 text-end" style="font-size:1.35em; font-weight:700; color:#1563d7;">{{ (total + order.fraisLivraison)|number_format(2, ',', ' ') }}
+					€</div>
+			</div>
+		</div>
+		<div class="mt-4">
+			<a href="/" class="btn btn-primary">Retour à l’accueil</a>
+		</div>
+	</div>
+{% endblock %}

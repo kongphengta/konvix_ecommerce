@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Espace vendeur{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <h1 class="mb-4">Espace vendeur</h1>
+    <div class="alert alert-info">
+        Bienvenue dans votre espace vendeur !
+    </div>
+    <div class="row">
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-box-seam display-4 mb-2"></i>
+                    <h5 class="card-title">Mes produits</h5>
+                    <p class="card-text">Gérez vos produits en vente sur la marketplace.</p>
+                    <a href="{{ path('seller_products') }}" class="btn btn-primary">Voir mes produits</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-cart-check display-4 mb-2"></i>
+                    <h5 class="card-title">Mes commandes</h5>
+                    <p class="card-text">Consultez les commandes reçues sur vos produits.</p>
+                    <a href="{{ path('seller_orders') }}" class="btn btn-primary">Voir mes commandes</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-bar-chart-line display-4 mb-2"></i>
+                    <h5 class="card-title">Statistiques</h5>
+                    <p class="card-text">Suivez vos ventes et vos performances.</p>
+                    <a href="#" class="btn btn-primary disabled">Voir mes stats</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

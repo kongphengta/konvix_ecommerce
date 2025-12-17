@@ -1,0 +1,10 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="container mt-5">
+        <div class="alert alert-warning" role="alert">
+            <strong>Accès refusé :</strong> Vous n’avez pas les droits nécessaires pour accéder à cette page.
+        </div>
+        <a href="{{ path('app_login') }}" class="btn btn-warning mt-3">Retour à la connexion</a>
+    </div>
+{% endblock %}

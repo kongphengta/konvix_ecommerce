@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Devenir vendeur{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="mb-4 text-center text-warning"><i class="bi bi-shop me-2"></i>Demande pour devenir vendeur</h2>
+                    {{ form_start(form) }}
+                        {{ form_row(form.shopName, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_row(form.shopDescription, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_row(form.contactEmail, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_row(form.contactPhone, {'attr': {'class': 'form-control'}}) }}
+                        <button type="submit" class="btn btn-warning w-100 mt-3 fw-bold">
+                            <i class="bi bi-send"></i> Envoyer ma demande
+                        </button>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

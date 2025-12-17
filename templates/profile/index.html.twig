@@ -1,106 +1,180 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Mon espace client{% endblock %}
+{% block title %}Mon espace client
+{% endblock %}
 
 {% block body %}
-    <div class="container mt-5">
-        <h1>Bienvenue sur votre espace client</h1>
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h5 class="card-title">Mes informations</h5>
-                        <ul class="list-unstyled mb-0">
-                            <li><strong>Nom :</strong> {{ user.lastName }}</li>
-                            <li><strong>Prénom :</strong> {{ user.firstName }}</li>
-                            <li><strong>Email :</strong> {{ user.email }}</li>
-                            <li><strong>Téléphone :</strong> {{ user.phone }}</li>
-                            <li><strong>Adresse :</strong> {{ user.address }}</li>
-                            <li><strong>Ville :</strong> {{ user.city }}</li>
-                            <li><strong>Code postal :</strong> {{ user.zip }}</li>
-                            <li><strong>Pays :</strong> {{ user.country }}</li>
-                        </ul>
-                        <a href="{{ path('app_profile_edit') }}" class="btn btn-outline-primary btn-sm mt-3"><i class="bi bi-pencil"></i> Modifier mes informations</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h5 class="card-title">Changer mon mot de passe</h5>
-                        {% if changePasswordForm is defined %}
-                            {{ form_start(changePasswordForm) }}
-                                {{ form_row(changePasswordForm.currentPassword, {'attr': {'class': 'form-control'}}) }}
-                                {{ form_row(changePasswordForm.newPassword, {'attr': {'class': 'form-control'}}) }}
-                                {{ form_row(changePasswordForm.confirmPassword, {'attr': {'class': 'form-control'}}) }}
-                                <button class="btn btn-primary w-100 mt-3" type="submit">Valider</button>
-                            {{ form_end(changePasswordForm) }}
-                        {% else %}
-                            <a href="{{ path('app_profile_password') }}" class="btn btn-outline-secondary btn-sm mt-3">Changer mon mot de passe</a>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
+	<div class="container mt-5">
+		<h1>Bienvenue sur votre espace client</h1>
+		<div class="row">
+			<div class="col-md-6">
+				<div class="card mb-4">
+					<div class="card-body">
+						<h5 class="card-title">Mes informations</h5>
+						<ul class="list-unstyled mb-0">
+							<li>
+								<strong>Nom :</strong>
+								{{ user.lastName }}</li>
+							<li>
+								<strong>Prénom :</strong>
+								{{ user.firstName }}</li>
+							<li>
+								<strong>Email :</strong>
+								{{ user.email }}</li>
+							<li>
+								<strong>Téléphone :</strong>
+								{{ user.phone }}</li>
+							<li>
+								<strong>Adresse :</strong>
+								{{ user.address }}</li>
+							<li>
+								<strong>Ville :</strong>
+								{{ user.city }}</li>
+							<li>
+								<strong>Code postal :</strong>
+								{{ user.zip }}</li>
+							<li>
+								<strong>Pays :</strong>
+								{{ user.country }}</li>
+						</ul>
+						<a href="{{ path('app_profile_edit') }}" class="btn btn-outline-primary btn-sm mt-3">
+							<i class="bi bi-pencil"></i>
+							Modifier mes informations</a>
 
-        <div class="row mb-4">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Adresse de livraison</h5>
-                        {% if user.address %}
-                            <div>{{ user.firstName }} {{ user.lastName }}<br>{{ user.address }}<br>{{ user.zip }} {{ user.city }}<br>{{ user.country }}<br>
-                            <span class="fw-bold">Tél :</span> {{ user.phone }}</div>
-                        {% else %}
-                            <div class="text-danger">Aucune adresse renseignée.</div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Adresse de facturation</h5>
-                        {% if user.address %}
-                            <div>{{ user.firstName }} {{ user.lastName }}<br>{{ user.address }}<br>{{ user.zip }} {{ user.city }}<br>{{ user.country }}<br>
-                            <span class="fw-bold">Tél :</span> {{ user.phone }}</div>
-                        {% else %}
-                            <div class="text-danger">Aucune adresse renseignée.</div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="card mb-4">
-            <div class="card-body">
-                <h5 class="card-title">Mes commandes</h5>
-                {% if orders|length > 0 %}
-                    <table class="table table-bordered table-striped">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Total</th>
-                                <th>Statut</th>
-                                <th>Facture</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        {% for order in orders %}
-                            <tr>
-                                <td>{{ order.createdAt ? order.createdAt|date('d/m/Y H:i') : '' }}</td>
-                                <td>{{ order.total|number_format(2, ',', ' ') }} €</td>
-                                <td>{{ order.status }}</td>
-                                <td>
-                                    <a href="#" class="btn btn-sm btn-outline-primary disabled">PDF</a>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                {% else %}
-                    <p>Aucune commande pour le moment.</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
+						{% if 'ROLE_SELLER' not in user.roles and user.seller is null %}
+							<a href="{{ path('profile_become_seller') }}" class="btn btn-warning btn-sm mt-3 ms-2">
+								<i class="bi bi-shop"></i>
+								Devenir vendeur
+							</a>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+			<div class="col-md-6">
+				<div class="card mb-4">
+					<div class="card-body">
+						<h5 class="card-title">Changer mon mot de passe</h5>
+						{% if changePasswordForm is defined %}
+							{{ form_start(changePasswordForm) }}
+							{{ form_row(changePasswordForm.currentPassword, {'attr': {'class': 'form-control'}}) }}
+							{{ form_row(changePasswordForm.newPassword, {'attr': {'class': 'form-control'}}) }}
+							{{ form_row(changePasswordForm.confirmPassword, {'attr': {'class': 'form-control'}}) }}
+							<button class="btn btn-primary w-100 mt-3" type="submit">Valider</button>
+							{{ form_end(changePasswordForm) }}
+						{% else %}
+							<a href="{{ path('app_profile_password') }}" class="btn btn-outline-secondary btn-sm mt-3">Changer mon mot de passe</a>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="row mb-4">
+			<div class="col-md-6">
+				<div class="card">
+					<div class="card-body">
+						<h5 class="card-title">Adresse de livraison</h5>
+						{% if user.address %}
+							<div>{{ user.firstName }}
+								{{ user.lastName }}<br>{{ user.address }}<br>{{ user.zip }}
+								{{ user.city }}<br>{{ user.country }}<br>
+								<span class="fw-bold">Tél :</span>
+								{{ user.phone }}</div>
+						{% else %}
+							<div class="text-danger">Aucune adresse renseignée.</div>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+			<div class="col-md-6">
+				<div class="card">
+					<div class="card-body">
+						<h5 class="card-title">Adresse de facturation</h5>
+						{% if user.address %}
+							<div>{{ user.firstName }}
+								{{ user.lastName }}<br>{{ user.address }}<br>{{ user.zip }}
+								{{ user.city }}<br>{{ user.country }}<br>
+								<span class="fw-bold">Tél :</span>
+								{{ user.phone }}</div>
+						{% else %}
+							<div class="text-danger">Aucune adresse renseignée.</div>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="card mb-4">
+			<div class="card-body">
+				<h5 class="card-title">Mes commandes</h5>
+				{% if orders|length > 0 %}
+					<table class="table table-bordered table-striped">
+						<thead>
+							<tr>
+								<th>N° Commande</th>
+								<th>Date</th>
+								<th>Produit</th>
+								<th>Image</th>
+								<th>Quantité</th>
+								<th>Total</th>
+								<th>Transporteur</th>
+								<th>Frais livraison</th>
+								<th>Statut</th>
+								<th>Facture</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for order in orders|slice(0,5) %}
+								<tr>
+									<td>{{ order.id ?? '-' }}</td>
+									<td>{{ order.createdAt ? order.createdAt|date('d/m/Y H:i') : '' }}</td>
+									<td>
+										{% for item in order.getOrderItems() %}
+											{{ item.product.name }}<br>
+										{% else %}
+											-
+										{% endfor %}
+									</td>
+									<td>
+										{% set hasImage = false %}
+										{% for item in order.getOrderItems() %}
+											{% if item.product.mainImage and item.product.imageFolder %}
+												<img src="/uploads/product_images/{{ item.product.imageFolder }}/{{ item.product.mainImage }}" alt="Image produit" style="height:40px; max-width:60px; object-fit:contain; margin-bottom:4px;">
+												{% set hasImage = true %}
+											{% endif %}
+										{% endfor %}
+										{% if not hasImage %}
+											<span class="text-muted">Aucune image</span>
+										{% endif %}
+									</td>
+									<td>
+										{% for item in order.getOrderItems() %}
+											{{ item.quantity }}<br>
+										{% else %}
+											-
+										{% endfor %}
+									</td>
+									<td>{{ order.total|number_format(2, ',', ' ') }}
+										€</td>
+									<td>{{ order.transporteur }}</td>
+									<td>{{ order.fraisLivraison|number_format(2, ',', ' ') }}
+										€</td>
+									<td>{{ order.status }}</td>
+									<td>
+										<a href="{{ path('app_order_invoice', {'id': order.id}) }}" class="btn btn-sm btn-outline-primary">PDF</a>
+									</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				{% else %}
+					<p>Aucune commande pour le moment.</p>
+				{% endif %}
+				{% if orders|length > 5 %}
+					<div class="text-center mt-3">
+						<a href="{{ path('app_profile_orders') }}" class="btn btn-outline-primary">Voir plus de commandes</a>
+					</div>
+				{% endif %}
+			</div>
+		</div>
+	</div>
 {% endblock %}

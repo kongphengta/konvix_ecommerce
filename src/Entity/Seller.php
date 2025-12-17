@@ -23,7 +23,7 @@ class Seller
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
-    #[ORM\Column(type: Types::TEXT)]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
     #[ORM\Column]
@@ -77,7 +77,6 @@ class Seller
     public function setDescription(string $description): static
     {
         $this->description = $description;
-
         return $this;
     }
 

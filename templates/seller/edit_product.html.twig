@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Éditer un produit - Espace vendeur{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <h1 class="mb-4">Éditer un produit</h1>
+    {{ form_start(form) }}
+        {{ form_widget(form) }}
+        <button type="submit" class="btn btn-primary mt-3">Enregistrer les modifications</button>
+    {{ form_end(form) }}
+    <a href="{{ path('seller_products') }}" class="btn btn-secondary mt-3">Retour à la liste</a>
+</div>
+{% endblock %}

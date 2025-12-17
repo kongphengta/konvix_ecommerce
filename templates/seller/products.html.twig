@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes produits - Espace vendeur{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <h1 class="mb-4">Mes produits</h1>
+    <a href="{{ path('seller_product_new') }}" class="btn btn-success mb-3">Ajouter un produit</a>
+    {% if products is empty %}
+        <div class="alert alert-info">Vous n'avez pas encore de produit en vente.</div>
+    {% else %}
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Nom</th>
+                    <th>Catégorie</th>
+                    <th>Prix</th>
+                    <th>Stock</th>
+                    <th>Validé ?</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                    <tr>
+                        <td>{{ product.name }}</td>
+                        <td>{{ product.category.name }}</td>
+                        <td>{{ product.price|number_format(2, '.', ' ') }} €</td>
+                        <td>{{ product.stock }}</td>
+                        <td>
+                            {% if product.isValidated %}
+                                <span class="badge bg-success">Oui</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Non</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ path('seller_product_edit', {id: product.id}) }}" class="btn btn-sm btn-primary">Éditer</a>
+                            <form method="post" action="{{ path('seller_product_delete', {id: product.id}) }}" style="display:inline;" onsubmit="return confirm('Confirmer la suppression ?');">
+                                <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+    <a href="{{ path('seller_dashboard') }}" class="btn btn-secondary mt-3">Retour espace vendeur</a>
+</div>
+{% endblock %}

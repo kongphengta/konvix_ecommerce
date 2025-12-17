@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détail commande - Espace vendeur{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <h1 class="mb-4">Détail de la commande #{{ order.id }}</h1>
+    <div class="mb-3">
+        <strong>Date :</strong> {{ order.createdAt|date('d/m/Y H:i') }}<br>
+        <strong>Client :</strong> {{ order.user.email }}<br>
+        <strong>Statut :</strong> <span class="badge bg-info">{{ order.status }}</span>
+        <form method="post" action="{{ path('seller_order_status', {id: order.id}) }}" class="d-inline ms-3">
+            <select name="status" class="form-select d-inline w-auto" style="display:inline-block;">
+                <option value="En préparation" {% if order.status == 'En préparation' %}selected{% endif %}>En préparation</option>
+                <option value="Expédiée" {% if order.status == 'Expédiée' %}selected{% endif %}>Expédiée</option>
+                <option value="Livrée" {% if order.status == 'Livrée' %}selected{% endif %}>Livrée</option>
+            </select>
+            <button type="submit" class="btn btn-sm btn-primary">Changer</button>
+        </form>
+        <br>
+        <strong>Transporteur :</strong> {{ order.transporteur }}<br>
+        <strong>Frais livraison :</strong> {{ order.fraisLivraison|number_format(2, '.', ' ') }} €
+    </div>
+    <h5>Produits de cette commande (vos produits uniquement) :</h5>
+    <table class="table table-bordered table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Produit</th>
+                <th>Quantité</th>
+                <th>Prix unitaire</th>
+                <th>Total ligne</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.orderItems %}
+                {% if item.product.seller == app.user.seller %}
+                    <tr>
+                        <td>{{ item.product.name }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>{{ item.price|number_format(2, '.', ' ') }} €</td>
+                        <td>{{ (item.price * item.quantity)|number_format(2, '.', ' ') }} €</td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="mt-4">
+        <a href="{{ path('seller_orders') }}" class="btn btn-secondary">Retour à la liste des commandes</a>
+    </div>
+</div>
+{% endblock %}

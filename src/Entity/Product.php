@@ -6,6 +6,7 @@ use App\Repository\ProductRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
+use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\File;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
@@ -14,6 +15,19 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 #[Vich\Uploadable]
 class Product
 {
+    #[ORM\Column(type: 'boolean')]
+    private bool $isValidated = false;
+    public function isValidated(): bool
+    {
+        return $this->isValidated;
+    }
+
+    public function setIsValidated(bool $isValidated): self
+    {
+        $this->isValidated = $isValidated;
+        return $this;
+    }
+
     // ...existing code...
 
     public function getMainImagePath(): ?string
@@ -148,7 +162,6 @@ class Product
     public function setDescription(?string $description): static
     {
         $this->description = $description;
-
         return $this;
     }
 

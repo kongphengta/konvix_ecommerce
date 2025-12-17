@@ -1,5 +1,6 @@
 twig:
     file_name_pattern: '*.twig'
+    exception_controller: null
 
 when@test:
     twig:

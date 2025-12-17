@@ -2,6 +2,9 @@
 
 namespace App\Controller;
 
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
+
 use App\Service\CartService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -10,49 +13,97 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CheckoutController extends AbstractController
 {
+
+    #[Route('/checkout/cancel', name: 'checkout_cancel')]
+    public function cancel(): Response
+    {
+        $this->addFlash('danger', 'Le paiement a été annulé ou rejeté. Votre commande n’a pas été validée.');
+        return $this->render('checkout/cancel.html.twig');
+    }
+
     #[Route('/checkout', name: 'checkout_index')]
     public function index(CartService $cartService, Request $request): Response
     {
         $cart = $cartService->getDetailedCart();
         $session = $request->getSession();
-        $address = null;
+        $addressDelivery = null;
+        $addressBilling = null;
         $payment_choice = false;
         if ($request->isMethod('POST')) {
-                // Si on vient du formulaire d'adresse
-                if ($request->request->has('address')) {
-                    $address = [
-                        'address' => $request->request->get('address'),
-                        'city' => $request->request->get('city'),
-                        'zip' => $request->request->get('zip'),
-                        'country' => $request->request->get('country'),
-                    ];
-                    $session->set('checkout_address', $address);
-                    $payment_choice = true;
-                }
-                // Vérification du choix du transporteur
-                if (!$request->request->has('transporteur') || $request->request->get('transporteur') == '') {
-                    $this->addFlash('warning', 'Avant de passer la commande il faut sélectionner votre transporteur.');
-                    return $this->redirectToRoute('cart_index');
-                }
-                // Si le transporteur est bien sélectionné, on l’enregistre
-                if ($request->request->has('transporteur')) {
-                    $transporteurs = [
-                        'colissimo' => ['name' => 'Colissimo', 'price' => 5.90],
-                        'mondial' => ['name' => 'Mondial Relay', 'price' => 4.50],
-                        'chrono' => ['name' => 'Chronopost', 'price' => 12.00],
-                    ];
-                    $selected = $request->request->get('transporteur');
-                    $transporteur = $transporteurs[$selected] ?? ['name' => 'Non renseigné', 'price' => 0.00];
-                    $session->set('checkout_transporteur', $transporteur);
-                }
+            // Adresse de livraison
+            if ($request->request->has('address_delivery')) {
+                $addressDelivery = [
+                    'address' => $request->request->get('address_delivery'),
+                    'city' => $request->request->get('city_delivery'),
+                    'zip' => $request->request->get('zip_delivery'),
+                    'country' => $request->request->get('country_delivery'),
+                    'phone' => $request->request->get('phone_delivery'),
+                ];
+                $session->set('checkout_address_delivery', $addressDelivery);
+                $payment_choice = true;
+            }
+            // Adresse de facturation
+            if ($request->request->has('address_billing')) {
+                $addressBilling = [
+                    'address' => $request->request->get('address_billing'),
+                    'city' => $request->request->get('city_billing'),
+                    'zip' => $request->request->get('zip_billing'),
+                    'country' => $request->request->get('country_billing'),
+                    'phone' => $request->request->get('phone_billing'),
+                ];
+                $session->set('checkout_address_billing', $addressBilling);
+            }
+            // Vérification du choix du transporteur
+            $selected = $request->request->get('transporteur', $session->get('cart_transporteur', ''));
+            $transporteurs = [
+                'colissimo' => ['name' => 'Colissimo', 'price' => 5.90],
+                'mondial' => ['name' => 'Mondial Relay', 'price' => 4.50],
+                'chrono' => ['name' => 'Chronopost', 'price' => 12.00],
+            ];
+            if ($selected == '' || !isset($transporteurs[$selected])) {
+                $this->addFlash('warning', 'Avant de passer la commande il faut sélectionner votre transporteur.');
+                return $this->redirectToRoute('cart_index');
+            }
+            $transporteur = $transporteurs[$selected];
+            $session->set('checkout_transporteur', $transporteur);
+            $session->set('cart_transporteur', $selected);
         } else {
-            $address = $session->get('checkout_address');
+            $addressDelivery = $session->get('checkout_address_delivery');
+            $addressBilling = $session->get('checkout_address_billing');
         }
 
+        // Centralisation du transporteur : priorité à la session checkout, sinon à la session cart
+        // Récupère le transporteur depuis la requête GET si présent (redirection depuis le panier)
+        $selected = $request->query->get('transporteur', $session->get('cart_transporteur', ''));
+        $transporteurs = [
+            'colissimo' => ['name' => 'Colissimo', 'price' => 5.90],
+            'mondial' => ['name' => 'Mondial Relay', 'price' => 4.50],
+            'chrono' => ['name' => 'Chronopost', 'price' => 12.00],
+        ];
+        // Si aucun transporteur n'est sélectionné, on bloque l'accès à la page checkout
+        if ($selected == '' || !isset($transporteurs[$selected])) {
+            $this->addFlash('warning', 'Veuillez sélectionner un mode de livraison avant de passer la commande.');
+            return $this->redirectToRoute('cart_index');
+        }
+        $transporteur = $transporteurs[$selected];
+        $session->set('checkout_transporteur', $transporteur);
+        $session->set('cart_transporteur', $selected);
+        $transporteurs = [
+            'colissimo' => ['name' => 'Colissimo', 'price' => 5.90],
+            'mondial' => ['name' => 'Mondial Relay', 'price' => 4.50],
+            'chrono' => ['name' => 'Chronopost', 'price' => 12.00],
+        ];
+        $transporteur = $session->get('checkout_transporteur');
+        if (!$transporteur || !isset($transporteur['name'])) {
+            $transporteur = $selected && isset($transporteurs[$selected]) ? $transporteurs[$selected] : ['name' => 'Non renseigné', 'price' => 0.00];
+            $session->set('checkout_transporteur', $transporteur);
+        }
         return $this->render('checkout/index.html.twig', [
             'cart' => $cart,
-            'address' => $address,
+            'addressDelivery' => $addressDelivery,
+            'addressBilling' => $addressBilling,
             'payment_choice' => $payment_choice,
+            'transporteur' => $transporteur,
         ]);
     }
     #[Route('/checkout/recap', name: 'checkout_recap')]
@@ -60,15 +111,28 @@ class CheckoutController extends AbstractController
     {
         $cart = $cartService->getDetailedCart();
         $session = $request->getSession();
+        $user = $this->getUser();
         $address = $session->get('checkout_address');
-        $transporteur = $session->get('checkout_transporteur');
-        if (!$address) {
-            $this->addFlash('warning', 'Veuillez renseigner votre adresse avant de valider la commande.');
-            return $this->redirectToRoute('cart_index');
+        if (!$address || !$address['address']) {
+            $address = [
+                'address' => $user->getAddress(),
+                'city' => $user->getCity(),
+                'zip' => $user->getZip(),
+                'country' => $user->getCountry(),
+                'phone' => $user->getPhone(),
+            ];
+            $session->set('checkout_address', $address);
         }
-        if (!$transporteur) {
-            $this->addFlash('warning', 'Veuillez sélectionner un mode de livraison avant de valider la commande.');
-            return $this->redirectToRoute('cart_index');
+        $selected = $session->get('cart_transporteur', '');
+        $transporteurs = [
+            'colissimo' => ['name' => 'Colissimo', 'price' => 5.90],
+            'mondial' => ['name' => 'Mondial Relay', 'price' => 4.50],
+            'chrono' => ['name' => 'Chronopost', 'price' => 12.00],
+        ];
+        $transporteur = $session->get('checkout_transporteur');
+        if (!$transporteur || !isset($transporteur['name'])) {
+            $transporteur = $selected && isset($transporteurs[$selected]) ? $transporteurs[$selected] : ['name' => 'Non renseigné', 'price' => 0.00];
+            $session->set('checkout_transporteur', $transporteur);
         }
         return $this->render('checkout/recap.html.twig', [
             'cart' => $cart,
@@ -76,14 +140,93 @@ class CheckoutController extends AbstractController
             'transporteur' => $transporteur,
         ]);
     }
+    #[Route('/checkout/success', name: 'checkout_success')]
+    public function success(
+        CartService $cartService,
+        Request $request,
+        MailerInterface $mailer,
+        \Doctrine\ORM\EntityManagerInterface $entityManager
+    ): Response {
+        $cart = $cartService->getDetailedCart();
+        $user = $this->getUser();
+        $session = $request->getSession();
+        $address = $session->get('checkout_address');
+        $selected = $session->get('cart_transporteur', '');
+        $transporteurs = [
+            'colissimo' => ['name' => 'Colissimo', 'price' => 5.90],
+            'mondial' => ['name' => 'Mondial Relay', 'price' => 4.50],
+            'chrono' => ['name' => 'Chronopost', 'price' => 12.00],
+        ];
+        $transporteur = $session->get('checkout_transporteur');
+        if (!$transporteur || !isset($transporteur['name'])) {
+            $transporteur = $selected && isset($transporteurs[$selected]) ? $transporteurs[$selected] : ['name' => 'Non renseigné', 'price' => 0.00];
+            $session->set('checkout_transporteur', $transporteur);
+        }
+        // Création et sauvegarde de la commande
+        $order = new \App\Entity\Order();
+        $order->setUser($user);
+        $order->setCreatedAt(new \DateTimeImmutable());
+        $order->setTotal(array_reduce($cart, function ($sum, $item) {
+            return $sum + $item['product']->getPrice() * $item['quantity'];
+        }, 0));
+        $order->setFraisLivraison($transporteur['price'] ?? 0.0);
+        $order->setTransporteur($transporteur['name'] ?? 'Non renseigné');
+        $order->setStatus('payé');
+        $user->addOrder($order);
+        $entityManager->persist($order);
+        $entityManager->persist($user);
+
+        // Création des OrderItem pour chaque produit du panier
+        foreach ($cart as $item) {
+            $orderItem = new \App\Entity\OrderItem();
+            $orderItem->setOderRef($order);
+            $orderItem->setProduct($item['product']);
+            $orderItem->setQuantity($item['quantity']);
+            $orderItem->setPrice($item['product']->getPrice());
+            $entityManager->persist($orderItem);
+            $order->addOrderItem($orderItem);
+        }
+
+        $entityManager->flush();
+        // Préparation du contenu HTML de l'email
+        $html = $this->renderView('email/order_confirmation.html.twig', [
+            'user' => $user,
+            'cart' => $cart,
+            'address' => $address,
+            'transporteur' => $transporteur,
+            'order' => $order,
+        ]);
+        $email = (new Email())
+            ->from('no-reply@konvix.com')
+            ->to($user ? $user->getEmail() : '')
+            ->subject('Confirmation de votre commande Konvix')
+            ->html($html);
+        $mailer->send($email);
+        // Vider le panier après paiement validé
+        $cartService->clear();
+        $this->addFlash('success', 'Votre paiement a été validé, merci pour votre commande ! Un email de confirmation vous a été envoyé.');
+        return $this->render('checkout/success.html.twig', [
+            'cart' => $cart,
+            'user' => $user,
+            'order' => $order,
+            'address' => $address,
+            'transporteur' => $transporteur,
+        ]);
+    }
+
     #[Route('/checkout/pay/stripe', name: 'checkout_pay_stripe')]
     public function payStripe(CartService $cartService, Request $request): Response
     {
         $cart = $cartService->getDetailedCart();
+        if (empty($cart)) {
+            $this->addFlash('danger', 'Votre panier est vide, impossible de procéder au paiement.');
+            return $this->redirectToRoute('cart_index');
+        }
         $stripeSecret = $_ENV['STRIPE_SECRET_KEY'] ?? $this->getParameter('STRIPE_SECRET_KEY');
         \Stripe\Stripe::setApiKey($stripeSecret);
 
         $lineItems = [];
+        $total = 0;
         foreach ($cart as $item) {
             $lineItems[] = [
                 'price_data' => [
@@ -95,14 +238,36 @@ class CheckoutController extends AbstractController
                 ],
                 'quantity' => $item['quantity'],
             ];
+            $total += $item['product']->getPrice() * $item['quantity'];
+        }
+        // Ajout des frais de livraison comme un item Stripe
+        $session = $request->getSession();
+        $transporteur = $session->get('checkout_transporteur');
+        if ($transporteur && isset($transporteur['price']) && $transporteur['price'] > 0) {
+            $lineItems[] = [
+                'price_data' => [
+                    'currency' => 'eur',
+                    'product_data' => [
+                        'name' => 'Frais de livraison - ' . $transporteur['name'],
+                    ],
+                    'unit_amount' => (int)($transporteur['price'] * 100),
+                ],
+                'quantity' => 1,
+            ];
+            $total += $transporteur['price'];
+        }
+
+        if (empty($lineItems)) {
+            $this->addFlash('danger', 'Votre panier est vide, impossible de procéder au paiement.');
+            return $this->redirectToRoute('cart_index');
         }
 
         $session = \Stripe\Checkout\Session::create([
             'payment_method_types' => ['card'],
             'line_items' => $lineItems,
             'mode' => 'payment',
-            'success_url' => $this->generateUrl('cart_index', [], 0) . '?success=1',
-            'cancel_url' => $this->generateUrl('cart_index', [], 0) . '?canceled=1',
+            'success_url' => $this->generateUrl('checkout_success', [], 0),
+            'cancel_url' => $this->generateUrl('checkout_cancel', [], 0),
         ]);
 
         return $this->redirect($session->url);
@@ -150,7 +315,7 @@ class CheckoutController extends AbstractController
                 'items' => $items,
             ]],
             'application_context' => [
-                'return_url' => $this->generateUrl('cart_index', [], 0) . '?success=1',
+                'return_url' => $this->generateUrl('checkout_success', [], 0),
                 'cancel_url' => $this->generateUrl('cart_index', [], 0) . '?canceled=1',
             ],
         ];

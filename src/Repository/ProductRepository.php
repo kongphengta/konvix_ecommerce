@@ -11,6 +11,15 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class ProductRepository extends ServiceEntityRepository
 {
+    /**
+     * @return Product[]
+     */
+    public function findValidatedProductsQueryBuilder()
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.isValidated = :val')
+            ->setParameter('val', true);
+    }
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Product::class);

@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Demandes vendeur{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h2 class="mb-4">Demandes pour devenir vendeur</h2>
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('info') %}
+        <div class="alert alert-info">{{ message }}</div>
+    {% endfor %}
+    <table class="table table-bordered table-hover bg-white">
+        <thead class="table-light">
+            <tr>
+                <th>#</th>
+                <th>Utilisateur</th>
+                <th>Nom boutique</th>
+                <th>Description</th>
+                <th>Email</th>
+                <th>Téléphone</th>
+                <th>Date demande</th>
+                <th style="min-width:140px;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for req in requests %}
+            <tr>
+                <td>{{ req.id }}</td>
+                <td>{{ req.user.email }}</td>
+                <td>{{ req.shopName }}</td>
+                <td>{{ req.shopDescription|e }}</td>
+                <td>{{ req.contactEmail }}</td>
+                <td>{{ req.contactPhone }}</td>
+                <td>{{ req.createdAt ? req.createdAt|date('d/m/Y H:i') : '' }}</td>
+                <td>
+                    <div class="d-flex gap-2">
+                        <a href="{{ path('admin_seller_request_validate', {'id': req.id}) }}" class="btn btn-success btn-sm">Valider</a>
+                        <a href="{{ path('admin_seller_request_refuse', {'id': req.id}) }}" class="btn btn-danger btn-sm">Refuser</a>
+                    </div>
+                </td>
+            </tr>
+        {% else %}
+            <tr><td colspan="8" class="text-center">Aucune demande en attente</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
