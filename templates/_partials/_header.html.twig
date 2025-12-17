@@ -1,72 +1,125 @@
-<div class="bg-dark w-100" style="background-color: #0a174e !important;">
-	<nav class="navbar navbar-expand-lg navbar-dark w-100" style="background-color: transparent !important;">
-		<div class="container-fluid">
-			<a class="navbar-brand" href="{{ path('app_home') }}">
-				<img src="/uploads/product_images/konvixlogo.png" style="width: 170px;" alt="Konvix Ecommerce">
-			</a>
-			<ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-3">
-				<li class="nav-item">
-					<a class="nav-link text-white" href="{{ path('app_home') }}">Accueil</a>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark" style="background-color: #0a174e !important;">
+   <div class="container-fluid">
+	   <a class="navbar-brand" href="{{ path('app_home') }}">
+		   <img src="/uploads/product_images/konvixlogo.png" style="width: 170px;" alt="Konvix Ecommerce">
+	   </a>
+	   <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+		   <span class="navbar-toggler-icon"></span>
+	   </button>
+	   <div class="collapse navbar-collapse" id="mainNavbar">
+		   <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-3">
+			   <li class="nav-item">
+				   <a class="nav-link text-white" href="{{ path('app_home') }}">Accueil</a>
+			   </li>
+			   <li class="nav-item">
+				   <a class="nav-link text-white" href="#">Produits</a>
+			   </li>
+			   <li class="nav-item">
+				   <a class="nav-link text-white" href="#">Catégories</a>
+			   </li>
+		   </ul>
+		   <ul class="navbar-nav ms-auto mb-2 mb-lg-0 gap-3 align-items-center d-flex">
+			   {% if app.user %}
+				   <li class="nav-item dropdown">
+					   <a href="#" class="btn text-white dropdown-toggle d-flex align-items-center nav-link" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+						   <span class="me-2">
+							   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-person-circle" viewbox="0 0 16 16">
+								   <path d="M11 10a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"/>
+								   <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 1 0 0 14A7 7 0 0 0 8 1z"/>
+							   </svg>
+						   </span>
+						   {{ app.user.firstName ~ ' ' ~ app.user.lastName }}
+					   </a>
+					   <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+						   <li>
+							   <a class="dropdown-item" href="{{ path('app_profile') }}">Mon Profil</a>
+						   </li>
+						   {% if app.user and 'ROLE_SELLER' in app.user.roles %}
+							   <li>
+								   <a class="dropdown-item" href="{{ path('seller_dashboard') }}">
+									   <i class="bi bi-shop me-1"></i>Espace vendeur</a>
+							   </li>
+						   {% endif %}
+						   <li><hr class="dropdown-divider"></li>
+						   <li>
+							   <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">Déconnexion</a>
+						   </li>
+					   </ul>
+				   </li>
+				   <!-- Modal de confirmation de déconnexion -->
+				   <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+					   <div class="modal-dialog modal-dialog-centered">
+						   <div class="modal-content">
+							   <div class="modal-header">
+								   <h5 class="modal-title" id="logoutModalLabel">Confirmer la déconnexion</h5>
+								   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+							   </div>
+							   <div class="modal-body">
+								   Voulez-vous vraiment vous déconnecter ?
+							   </div>
+							   <div class="modal-footer">
+								   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+								   <a href="{{ path('app_logout') }}" class="btn btn-danger">Déconnexion</a>
+							   </div>
+						   </div>
+					   </div>
+				   </div>
+			   {% else %}
+				   <li class="nav-item">
+					   <a href="{{ path('app_login') }}" class="btn text-white nav-link">Connexion</a>
+				   </li>
+				   <li class="nav-item">
+					   <a href="{{ path('app_register') }}" class="btn text-white nav-link">Inscription</a>
+				   </li>
+			   {% endif %}
+			   <li class="nav-item d-flex align-items-center">
+				   <a href="{{ path('cart_index') }}" class="btn text-white position-relative nav-link d-flex align-items-center">
+					   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-cart" viewBox="0 0 16 16">
+						   <path d="M0 1.5A.5.5 0 0 1 .5 1h1a.5.5 0 0 1 .485.379L2.89 5H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 14H4a.5.5 0 0 1-.491-.408L1.01 2H.5a.5.5 0 0 1-.5-.5zm3.14 4l1.25 6.5h7.22l1.25-6.5H3.14zM5 12a2 2 0 1 0 4 0H5z"/>
+					   </svg>
+					   {% if cart_count() > 0 %}
+						   <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.7em;">{{ cart_count() }}</span>
+					   {% endif %}
+				   </a>
+			   </li>
+		   </ul>
+	   </div>
+   </div>
+</nav>
+ 
+		<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+			<li>
+				<a class="dropdown-item" href="{{ path('app_profile') }}">Mon Profil</a>
+			</li>
+			   {% if app.user is not null and 'ROLE_SELLER' in app.user.roles %}
+				<li>
+					<a class="dropdown-item" href="{{ path('seller_dashboard') }}">
+						<i class="bi bi-shop me-1"></i>Espace vendeur</a>
 				</li>
-				<li class="nav-item">
-					<a class="nav-link text-white" href="#">Produits</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link text-white" href="#">Catégories</a>
-				</li>
-			</ul>
-			<div class="d-flex ms-auto gap-2 align-items-center">
-				{% if app.user %}
-					<div class="dropdown">
-						<a href="#" class="btn text-white dropdown-toggle d-flex align-items-center" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-							<span class="me-2">
-								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-person-circle" viewbox="0 0 16 16">
-									<path d="M11 10a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"/>
-									<path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 1 0 0 14A7 7 0 0 0 8 1z"/>
-								</svg>
-							</span>
-							{{ app.user.firstName ~ ' ' ~ app.user.lastName }}
-						</a>
-						<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-							<li>
-								<a class="dropdown-item" href="{{ path('app_profile') }}">Mon Profil</a>
-							</li>
-							<li><hr class="dropdown-divider"></li>
-							<li>
-								<a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">Déconnexion</a>
-							</li>
-						</div>
-
-						<!-- Modal de confirmation de déconnexion -->
-						<div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
-							<div class="modal-dialog modal-dialog-centered">
-								<div class="modal-content">
-									<div class="modal-header">
-										<h5 class="modal-title" id="logoutModalLabel">Confirmer la déconnexion</h5>
-										<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-									</div>
-									<div class="modal-body">
-										Voulez-vous vraiment vous déconnecter ?
-									</div>
-									<div class="modal-footer">
-										<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-										<a href="{{ path('app_logout') }}" class="btn btn-danger">Déconnexion</a>
-									</div>
-								</div>
-							</div>
-						</div>
-					</ul>
-				</div>
-			{% else %}
-				<a href="{{ path('app_login') }}" class="btn text-white">Connexion</a>
-				<a href="{{ path('app_register') }}" class="btn text-white">Inscription</a>
 			{% endif %}
-			<a href="{{ path('cart_index') }}" class="btn text-white position-relative">
-				<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-cart" viewbox="0 0 16 16">
-					<path d="M0 1.5A.5.5 0 0 1 .5 1h1a.5.5 0 0 1 .485.379L2.89 5H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 14H4a.5.5 0 0 1-.491-.408L1.01 2H.5a.5.5 0 0 1-.5-.5zm3.14 4l1.25 6.5h7.22l1.25-6.5H3.14zM5 12a2 2 0 1 0 4 0H5z"/>
-				</svg>
-				<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.7em;">{{ cart_count() }}</span>
-			</a>
+			<li><hr class="dropdown-divider"></li>
+			<li>
+				<a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">Déconnexion</a>
+			</li>
+		</ul>
+		<!-- Modal de confirmation de déconnexion -->
+		<div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="logoutModalLabel">Confirmer la déconnexion</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+					</div>
+					<div class="modal-body">
+						Voulez-vous vraiment vous déconnecter ?
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+						<a href="{{ path('app_logout') }}" class="btn btn-danger">Déconnexion</a>
+					</div>
+				</div>
+			</div>
 		</div>
-	</div>
-</nav></div>
+	  </div>
+	 </div>
+	</nav>
