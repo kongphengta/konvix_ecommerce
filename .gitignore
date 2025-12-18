@@ -5,9 +5,19 @@
 /.env.*.local
 /config/secrets/prod/prod.decrypt.private.php
 /public/bundles/
-/var/
+/var/*
+!/var/cache/
+!/var/log/
+!/var/sessions/
+/var/cache/*
+!/var/cache/.gitkeep
+/var/log/*
+!/var/log/.gitkeep
+/var/sessions/*
+!/var/sessions/.gitkeep
 /vendor/
-public/uploads/
+public/uploads/*
+!public/uploads/.gitkeep
 ###< symfony/framework-bundle ###
 
 ###> symfony/webpack-encore-bundle ###
