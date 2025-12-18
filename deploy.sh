@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ###############################################################################
 # Script de déploiement et correction des permissions - Konvix E-commerce
@@ -53,11 +53,19 @@ check_project_dir() {
 create_directories() {
     info "Création des répertoires nécessaires..."
     
-    sudo -u $WEB_USER mkdir -p "$PROJECT_DIR/var/cache/$APP_ENV"
-    sudo -u $WEB_USER mkdir -p "$PROJECT_DIR/var/log"
-    sudo -u $WEB_USER mkdir -p "$PROJECT_DIR/var/sessions"
-    sudo -u $WEB_USER mkdir -p "$PROJECT_DIR/public/uploads"
-    sudo -u $WEB_USER mkdir -p "$PROJECT_DIR/public/uploads/products"
+    # Liste des répertoires à créer
+    local dirs=(
+        "$PROJECT_DIR/var/cache/$APP_ENV"
+        "$PROJECT_DIR/var/log"
+        "$PROJECT_DIR/var/sessions"
+        "$PROJECT_DIR/public/uploads"
+        "$PROJECT_DIR/public/uploads/products"
+    )
+    
+    # Créer chaque répertoire
+    for dir in "${dirs[@]}"; do
+        sudo -u $WEB_USER mkdir -p "$dir"
+    done
     
     info "Répertoires créés avec succès"
 }
@@ -102,6 +110,12 @@ clear_cache() {
     info "Nettoyage du cache..."
     
     cd "$PROJECT_DIR"
+    
+    # Créer le répertoire cache s'il n'existe pas
+    if [ ! -d "$PROJECT_DIR/var/cache/$APP_ENV" ]; then
+        sudo -u $WEB_USER mkdir -p "$PROJECT_DIR/var/cache/$APP_ENV"
+        info "Répertoire cache créé"
+    fi
     
     # Supprimer le cache existant
     if [ -d "$PROJECT_DIR/var/cache/$APP_ENV" ]; then

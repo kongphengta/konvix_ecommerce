@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ###############################################################################
 # Script de vérification des prérequis serveur - Konvix E-commerce
@@ -16,6 +16,10 @@ NC='\033[0m' # No Color
 PASSED=0
 FAILED=0
 WARNINGS=0
+
+# Seuils d'utilisation disque
+DISK_WARNING_THRESHOLD=80
+DISK_CRITICAL_THRESHOLD=90
 
 # Fonction pour afficher les résultats
 check_pass() {
@@ -236,9 +240,9 @@ DISK_AVAIL=$(df -h / | awk 'NR==2 {print $4}')
 info "Espace disque utilisé: ${DISK_USAGE}%"
 info "Espace disponible: $DISK_AVAIL"
 
-if [ "$DISK_USAGE" -lt 80 ]; then
+if [ "$DISK_USAGE" -lt "$DISK_WARNING_THRESHOLD" ]; then
     check_pass "Espace disque suffisant"
-elif [ "$DISK_USAGE" -lt 90 ]; then
+elif [ "$DISK_USAGE" -lt "$DISK_CRITICAL_THRESHOLD" ]; then
     check_warn "Espace disque faible (${DISK_USAGE}% utilisé)"
 else
     check_fail "Espace disque critique (${DISK_USAGE}% utilisé)"
