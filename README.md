@@ -74,3 +74,26 @@ Kongphengta (2025)
 
 ---
 Pour toute question : voir le code ou contacter l’auteur.
+## Déploiement en production
+
+Pour déployer l'application sur un serveur VPS (Ubuntu/Debian avec Apache), consultez les guides suivants :
+
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Guide complet de déploiement sur VPS
+- **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Guide de dépannage pour les erreurs courantes
+- **[.env.prod.example](.env.prod.example)** - Template de configuration production
+
+### Script de déploiement rapide
+
+```bash
+# Sur le serveur VPS, après avoir cloné le projet
+cd /var/www/konvix.fr
+sudo bash deploy.sh --full
+```
+
+### Vérification du serveur
+
+Avant le déploiement, vérifier que le serveur répond aux prérequis :
+
+```bash
+bash verify-server.sh
+```
