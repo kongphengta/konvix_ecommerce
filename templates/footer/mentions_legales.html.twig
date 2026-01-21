@@ -1,0 +1,231 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mentions Légales & RGPD - Konvix Ecommerce
+{% endblock %}
+
+{% block body %}
+	<div class="container my-5">
+		<div class="row">
+			<div class="col-lg-10 mx-auto">
+				<h1 class="mb-4">Mentions Légales & RGPD</h1>
+				<p class="text-muted">Dernière mise à jour :
+					{{ "now"|date("d/m/Y") }}</p>
+
+				<hr class="my-4">
+
+				<section class="mb-5">
+					<h2 class="h4 mb-3">1. Éditeur du site</h2>
+					<p>
+						<strong>Raison sociale :</strong>
+						Konvix Technology</p>
+					<p>
+						<strong>Forme juridique :</strong>
+						SASU (Société par Actions Simplifiée Unipersonnée)</p>
+					<p>
+						<strong>Capital social :</strong>
+						5 000 €</p>
+					<p>
+						<strong>Siège social :</strong>
+						45 Rue du Commerce Électronique, 75015 Paris, France</p>
+					<p>
+						<strong>SIRET :</strong>
+						891 234 567 00015</p>
+					<p>
+						<strong>TVA Intracommunautaire :
+						</strong>
+						FR89123456700015</p>
+					<p>
+						<strong>Email :</strong>
+						contact@konvix.fr</p>
+					<p>
+						<strong>Téléphone :</strong>
+						01 42 68 75 30</p>
+					<p>
+						<strong>Directeur de publication :</strong>
+						Roland Mercier</p>
+				</section>
+
+				<section class="mb-5">
+					<h2 class="h4 mb-3">2. Hébergeur</h2>
+					<p>
+						<strong>Hébergeur :</strong>
+						OVH SAS</p>
+					<p>
+						<strong>Adresse :</strong>
+						2 rue Kellermann, 59100 Roubaix, France</p>
+					<p>
+						<strong>Téléphone :</strong>
+						1007 (depuis la France)</p>
+					<p>
+						<strong>Site web :</strong>
+						<a href="https://www.ovh.com" target="_blank">www.ovh.com</a>
+					</p>
+				</section>
+
+				<section class="mb-5">
+					<h2 class="h4 mb-3">3. Protection des données personnelles (RGPD)</h2>
+
+					<h5 class="mt-4">3.1 Responsable du traitement</h5>
+					<p>Le responsable du traitement des données est
+						<strong>Konvix Technology</strong>, représenté par Roland Mercier, joignable à :
+						<strong>contact@konvix.fr</strong>
+					</p>
+
+					<h5 class="mt-4">3.2 Données collectées</h5>
+					<p>Nous collectons les données suivantes :
+					</p>
+					<ul>
+						<li>
+							<strong>Données d'identification :</strong>
+							nom, prénom, email, téléphone</li>
+						<li>
+							<strong>Données de connexion :</strong>
+							adresse IP, logs de connexion</li>
+						<li>
+							<strong>Données de commande :</strong>
+							historique d'achats, adresses de livraison</li>
+						<li>
+							<strong>Données de paiement :</strong>
+							traitées par nos prestataires (Stripe, PayPal)</li>
+					</ul>
+
+					<h5 class="mt-4">3.3 Finalités du traitement</h5>
+					<p>Vos données sont utilisées pour :</p>
+					<ul>
+						<li>Créer et gérer votre compte utilisateur</li>
+						<li>Traiter vos commandes et assurer la livraison</li>
+						<li>Vous envoyer des communications importantes (confirmation, suivi)</li>
+						<li>Améliorer nos services</li>
+						<li>Respecter nos obligations légales</li>
+					</ul>
+
+					<h5 class="mt-4">3.4 Base légale</h5>
+					<p>Le traitement de vos données repose sur :</p>
+					<ul>
+						<li>
+							<strong>L'exécution d'un contrat</strong>
+							(commande)</li>
+						<li>
+							<strong>Votre consentement</strong>
+							(newsletter, cookies non essentiels)</li>
+						<li>
+							<strong>Une obligation légale</strong>
+							(facturation, comptabilité)</li>
+					</ul>
+
+					<h5 class="mt-4">3.5 Durée de conservation</h5>
+					<ul>
+						<li>
+							<strong>Données de compte :</strong>
+							jusqu'à suppression du compte + 3 ans</li>
+						<li>
+							<strong>Données de commande :</strong>
+							10 ans (obligation fiscale)</li>
+						<li>
+							<strong>Données de connexion :</strong>
+							12 mois</li>
+					</ul>
+
+					<h5 class="mt-4">3.6 Vos droits RGPD</h5>
+					<p>Conformément au RGPD, vous disposez des droits suivants :</p>
+					<ul>
+						<li>
+							<strong>Droit d'accès :</strong>
+							obtenir une copie de vos données</li>
+						<li>
+							<strong>Droit de rectification :</strong>
+							corriger vos données inexactes</li>
+						<li>
+							<strong>Droit à l'effacement :</strong>
+							supprimer vos données</li>
+						<li>
+							<strong>Droit à la portabilité :</strong>
+							recevoir vos données dans un format structuré</li>
+						<li>
+							<strong>Droit d'opposition :</strong>
+							vous opposer au traitement</li>
+						<li>
+							<strong>Droit de limitation :</strong>
+							limiter le traitement</li>
+					</ul>
+
+					<p class="mt-3">Pour exercer ces droits, contactez-nous à :
+						<strong>contact@konvix.fr</strong>
+					</p>
+					<p>Vous pouvez également déposer une réclamation auprès de la
+						<strong>CNIL</strong>
+						:
+						<a href="https://www.cnil.fr" target="_blank">www.cnil.fr</a>
+					</p>
+
+					<h5 class="mt-4">3.7 Transfert de données</h5>
+					<p>Vos données peuvent être transmises à :</p>
+					<ul>
+						<li>Nos prestataires de paiement (Stripe, PayPal)</li>
+						<li>Nos transporteurs partenaires</li>
+						<li>Les vendeurs de la marketplace</li>
+					</ul>
+					<p>Ces transferts sont encadrés par des accords garantissant la sécurité de vos données.</p>
+
+					<h5 class="mt-4">3.8 Sécurité</h5>
+					<p>Nous mettons en œuvre des mesures techniques et organisationnelles pour protéger vos données :</p>
+					<ul>
+						<li>Chiffrement SSL/TLS (HTTPS)</li>
+						<li>Mots de passe hashés (bcrypt)</li>
+						<li>Accès limités et contrôlés</li>
+						<li>Sauvegardes régulières</li>
+					</ul>
+				</section>
+
+				<section class="mb-5">
+					<h2 class="h4 mb-3">4. Cookies</h2>
+					<p>Notre site utilise des cookies pour :
+					</p>
+					<ul>
+						<li>
+							<strong>Cookies essentiels :</strong>
+							session, panier, authentification (obligatoires)</li>
+						<li>
+							<strong>Cookies analytiques :</strong>
+							Google Analytics (avec consentement)</li>
+						<li>
+							<strong>Cookies publicitaires :</strong>
+							publicité ciblée (avec consentement)</li>
+					</ul>
+					<p>Vous pouvez gérer vos préférences dans les paramètres de votre navigateur.</p>
+				</section>
+
+				<section class="mb-5">
+					<h2 class="h4 mb-3">5. Propriété intellectuelle</h2>
+					<p>Le contenu du site (textes, images, logos, vidéos) est protégé par le droit d'auteur.</p>
+					<p>Toute reproduction, même partielle, est interdite sans autorisation préalable.</p>
+				</section>
+
+				<section class="mb-5">
+					<h2 class="h4 mb-3">6. Crédits</h2>
+					<p>
+						<strong>Développement :</strong>
+						Konvix Technology</p>
+					<p>
+						<strong>Framework :</strong>
+						Symfony 7.2</p>
+					<p>
+						<strong>Design :</strong>
+						Bootstrap 5</p>
+					<p>
+						<strong>Hébergement :</strong>
+						OVH</p>
+				</section>
+
+				<div class="alert alert-info mt-5">
+					<h5>
+						<i class="fas fa-shield-alt"></i>
+						Vos données sont protégées</h5>
+					<p class="mb-0">Nous nous engageons à protéger votre vie privée et à respecter le RGPD.  Pour toute question :
+						<strong>contact@konvix.fr</strong>
+					</p>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}

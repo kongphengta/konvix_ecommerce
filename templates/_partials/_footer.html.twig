@@ -1,43 +1,56 @@
-<div class="bg-dark w-100 pt-4 pb-4 mt-auto text-white" style="border-top: 2px solid #222; box-shadow: 0 -2px 16px #0004;">
-	<footer class="w-100 bg-transparent text-white">
-		<div class="container-fluid">
-			<div class="row align-items-center">
-				<div class="col-md-6 text-md-start text-center mb-2 mb-md-0">
-					<span class="fw-bold">&copy;
-						{{ "now"|date('Y') }}
-						Konvix Ecommerce</span>
-					<span class="d-block d-md-inline">— Projet école en ligne STUDI</span>
-				</div>
-				<div class="col-md-6 text-md-start text-center footer-links">
-					<a href="#" class="text-white text-decoration-none mx-1">Conditions d'utilisation</a>
-					<a href="#" class="text-white text-decoration-none mx-1">Mentions légales &amp; RGPD</a>
-					<a href="#" class="text-white text-decoration-none mx-1">Qui sommes-nous ?</a>
-					<a href="#" class="text-white text-decoration-none mx-1">Contactez-nous</a>
+<!-- Footer -->
+<footer class="bg-dark text-white mt-5 py-4">
+	<div class="container">
+		<div class="row">
+			<div class="col-md-3">
+				<h5>Konvix Technology</h5>
+				<p class="small">Votre marketplace de confiance pour les produits technologiques.
+				</p>
+			</div>
+			<div class="col-md-3">
+				<h6>Informations</h6>
+				<ul class="list-unstyled">
+					<li>
+						<a href="{{ path('app_about') }}" class="text-white-50 text-decoration-none">Qui sommes-nous ?
+						</a>
+					</li>
+					<li>
+						<a href="{{ path('app_contact') }}" class="text-white-50 text-decoration-none">Contactez-nous</a>
+					</li>
+				</ul>
+			</div>
+			<div class="col-md-3">
+				<h6>Légal</h6>
+				<ul class="list-unstyled">
+					<li>
+						<a href="{{ path('app_conditions') }}" class="text-white-50 text-decoration-none">Conditions d'utilisation</a>
+					</li>
+					<li>
+						<a href="{{ path('app_mentions_legales') }}" class="text-white-50 text-decoration-none">Mentions légales & RGPD</a>
+					</li>
+				</ul>
+			</div>
+			<div class="col-md-3">
+				<h6>Suivez-nous</h6>
+				<p class="small">Restez connectés avec Konvix !</p>
+				<div>
+					<a href="#" class="text-white-50 me-3">
+						<i class="fab fa-facebook fa-lg"></i>
+					</a>
+					<a href="#" class="text-white-50 me-3">
+						<i class="fab fa-twitter fa-lg"></i>
+					</a>
+					<a href="#" class="text-white-50">
+						<i class="fab fa-instagram fa-lg"></i>
+					</a>
 				</div>
 			</div>
 		</div>
-	</footer>
-</div>
-<style>
-	.footer-links {
-		font-size: 1rem;
-		text-align: left;
-		padding-left: 0.5rem;
-	}
-	.footer-links a {
-		display: inline-block;
-		margin-left: 0.2em;
-		margin-right: 0.2em;
-		white-space: nowrap;
-	}
-	@media(max-width: 575px) {
-		.footer-links {
-			text-align: center;
-			font-size: 0.97rem;
-			padding-left: 0;
-		}
-		footer .col-md-6 {
-			margin-bottom: 0.5rem;
-		}
-	}
-</style>
+		<hr class="bg-secondary my-3">
+		<div class="text-center">
+			<small>&copy;
+				{{ "now"|date("Y") }}
+				Konvix Technology - Tous droits réservés</small>
+		</div>
+	</div>
+</footer>
