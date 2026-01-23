@@ -1,0 +1,191 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Contactez-nous - Konvix Ecommerce
+{% endblock %}
+
+{% block body %}
+	<div class="container my-5">
+		<div class="row">
+			<div class="col-lg-10 mx-auto">
+				<h1 class="mb-4">Contactez-nous</h1>
+				<p class="lead">Une question ? Une remarque ? N'hésitez pas à nous contacter !</p>
+
+				<hr class="my-4">
+
+				<div
+					class="row g-4">
+					<!-- Informations de contact -->
+					<div class="col-md-5">
+						<div class="card border-primary h-100">
+							<div class="card-header bg-primary text-white">
+								<h5 class="mb-0">
+									<i class="fas fa-info-circle"></i>
+									Nos coordonnées</h5>
+							</div>
+							<div class="card-body">
+								<h6>
+									<i class="fas fa-building text-primary"></i>
+									Konvix Technology</h6>
+								<p class="mb-3">30, Allée des Technologies<br>75015 Paris<br>France</p>
+
+								<h6>
+									<i class="fas fa-envelope text-primary"></i>
+									Email</h6>
+								<p class="mb-3">
+									<a href="mailto:contact@konvix.fr">contact@konvix.fr</a>
+								</p>
+
+								<h6>
+									<i class="fas fa-phone text-primary"></i>
+									Téléphone</h6>
+								<p class="mb-3">06 26 33 46 78<br><small class="text-muted">Du lundi au vendredi, 9h-18h</small>
+								</p>
+
+								<h6>
+									<i class="fas fa-clock text-primary"></i>
+									Horaires</h6>
+								<p class="mb-0">
+									<strong>Lundi - Vendredi :</strong>
+									9h00 - 18h00<br>
+									<strong>Samedi :</strong>
+									10h00 - 17h00<br>
+									<strong>Dimanche :</strong>
+									Fermé
+								</p>
+							</div>
+						</div>
+
+						<div class="card border-info mt-4">
+							<div class="card-header bg-info text-white">
+								<h5 class="mb-0">
+									<i class="fas fa-question-circle"></i>
+									FAQ</h5>
+							</div>
+							<div class="card-body">
+								<p>Consultez notre
+									<strong>Foire Aux Questions</strong>
+									pour trouver rapidement des réponses aux questions les plus courantes.</p>
+								<a href="#" class="btn btn-info btn-sm">Voir la FAQ</a>
+							</div>
+						</div>
+					</div>
+
+					<!-- Formulaire de contact -->
+					<div class="col-md-7">
+						<div class="card">
+							<div class="card-header bg-dark text-white">
+								<h5 class="mb-0">
+									<i class="fas fa-paper-plane"></i>
+									Envoyez-nous un message</h5>
+							</div>
+							<div class="card-body">
+								<form method="post">
+									<div class="mb-3">
+										<label for="name" class="form-label">Nom complet *</label>
+										<input type="text" class="form-control" id="name" name="name" required>
+									</div>
+
+									<div class="mb-3">
+										<label for="email" class="form-label">Email *</label>
+										<input type="email" class="form-control" id="email" name="email" required>
+									</div>
+
+									<div class="mb-3">
+										<label for="phone" class="form-label">Téléphone</label>
+										<input type="tel" class="form-control" id="phone" name="phone">
+									</div>
+
+									<div class="mb-3">
+										<label for="subject" class="form-label">Sujet *</label>
+										<select class="form-select" id="subject" name="subject" required>
+											<option value="">-- Choisissez un sujet --</option>
+											<option value="commande">Question sur une commande</option>
+											<option value="produit">Information produit</option>
+											<option value="livraison">Problème de livraison</option>
+											<option value="retour">Demande de retour</option>
+											<option value="technique">Problème technique</option>
+											<option value="vendeur">Devenir vendeur</option>
+											<option value="autre">Autre</option>
+										</select>
+									</div>
+
+									<div class="mb-3">
+										<label for="message" class="form-label">Message *</label>
+										<textarea class="form-control" id="message" name="message" rows="6" required></textarea>
+									</div>
+
+									<div class="form-check mb-3">
+										<input class="form-check-input" type="checkbox" id="rgpd" required>
+										<label class="form-check-label" for="rgpd">
+											J'accepte que mes données soient utilisées pour traiter ma demande.
+											<a href="{{ path('app_mentions_legales') }}">En savoir plus</a>
+										</label>
+									</div>
+
+									<button type="submit" class="btn btn-primary btn-lg w-100">
+										<i class="fas fa-paper-plane"></i>
+										Envoyer le message
+									</button>
+								</form>
+
+								<div class="alert alert-info mt-4 mb-0">
+									<small>
+										<i class="fas fa-info-circle"></i>
+										<strong>Délai de réponse :</strong>
+										Nous nous engageons à vous répondre sous 24-48h (jours ouvrés).</small>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Section aide rapide -->
+				<div class="row g-3 mt-5">
+					<div class="col-12">
+						<h3 class="mb-4">Besoin d'aide rapide ?</h3>
+					</div>
+					<div class="col-md-3">
+						<div class="card text-center h-100">
+							<div class="card-body">
+								<i class="fas fa-box fa-3x text-primary mb-3"></i>
+								<h6>Suivre ma commande</h6>
+								<p class="small text-muted">Accédez à votre espace client</p>
+								<a href="{{ path('app_login') }}" class="btn btn-sm btn-outline-primary">Mon compte</a>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-3">
+						<div class="card text-center h-100">
+							<div class="card-body">
+								<i class="fas fa-undo fa-3x text-success mb-3"></i>
+								<h6>Retour produit</h6>
+								<p class="small text-muted">14 jours pour changer d'avis</p>
+								<a href="{{ path('app_conditions') }}" class="btn btn-sm btn-outline-success">En savoir plus</a>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-3">
+						<div class="card text-center h-100">
+							<div class="card-body">
+								<i class="fas fa-shield-alt fa-3x text-warning mb-3"></i>
+								<h6>Garanties</h6>
+								<p class="small text-muted">Produits certifiés et garantis</p>
+								<a href="{{ path('app_about') }}" class="btn btn-sm btn-outline-warning">Nos garanties</a>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-3">
+						<div class="card text-center h-100">
+							<div class="card-body">
+								<i class="fas fa-truck fa-3x text-info mb-3"></i>
+								<h6>Livraison</h6>
+								<p class="small text-muted">Informations sur la livraison</p>
+								<a href="{{ path('app_conditions') }}" class="btn btn-sm btn-outline-info">Délais & tarifs</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}
