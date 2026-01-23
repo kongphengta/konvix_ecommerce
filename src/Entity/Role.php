@@ -15,7 +15,7 @@ class Role
     /**
      * @var Collection<int, User>
      */
-    #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'roles')]
+    #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'roleEntities')]
     private Collection $users;
 
     public function __construct()

@@ -34,14 +34,14 @@ class RegistrationFormType extends AbstractType
                 'mapped' => false,
                 'attr' => ['autocomplete' => 'new-password'],
                 'constraints' => [
-                    new NotBlank([
-                        'message' => 'Merci de saisir un mot de passe',
-                    ]),
-                    new Length([
-                        'min' => 6,
-                        'minMessage' => 'Votre mot de passe doit contenir au moins {{ limit }} caractères',
-                        'max' => 4096,
-                    ]),
+                    new NotBlank(
+                        message : 'Merci de saisir un mot de passe',
+                    ),
+                    new Length(
+                        min : 6,
+                        minMessage : 'Votre mot de passe doit contenir au moins {{ limit }} caractères',
+                        max : 4096,
+                    ),
                 ],
             ])
             ->add('confirmPassword', PasswordType::class, [
@@ -49,9 +49,9 @@ class RegistrationFormType extends AbstractType
                 'mapped' => false,
                 'attr' => ['autocomplete' => 'new-password'],
                 'constraints' => [
-                    new NotBlank([
-                        'message' => 'Merci de confirmer le mot de passe',
-                    ]),
+                    new NotBlank(
+                        message : 'Merci de confirmer le mot de passe',
+                    ),
                 ],
             ])
             ->add('phone', null, [
@@ -63,9 +63,9 @@ class RegistrationFormType extends AbstractType
                 'label' => 'Accepter les conditions',
                 'mapped' => false,
                 'constraints' => [
-                    new IsTrue([
-                        'message' => 'Vous devez accepter les conditions générales.',
-                    ]),
+                    new IsTrue(
+                        message : 'Vous devez accepter les conditions générales.',
+                    ),
                 ],
             ])
         ;

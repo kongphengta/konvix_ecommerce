@@ -10,10 +10,20 @@ use Symfony\Component\HttpFoundation\Response;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use Symfony\Component\Routing\Annotation\Route;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+
 
 #[AdminDashboard(routePath: '/admin', routeName: 'admin')]
 class DashboardController extends AbstractDashboardController
 {
+
+#[Route('/admin/dashboard', name: 'admin_dashboard')]
+#[IsGranted('ROLE_SUPER_ADMIN')]
+public function superAdminDashboard(): Response
+{
+    return $this->render('admin/dashboard/index.html.twig');
+}
     private AdminUrlGenerator $adminUrlGenerator;
 
     public function __construct(AdminUrlGenerator $adminUrlGenerator)

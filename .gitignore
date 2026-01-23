@@ -20,4 +20,5 @@ yarn-error.log
 ###> tests documentation ###
 /tests/_output/
 /tests_doc
+/config/api_keys.php
 ###< tests documentation ###

@@ -28,15 +28,14 @@ class Product
         return $this;
     }
 
-    // ...existing code...
-
     public function getMainImagePath(): ?string
     {
         if ($this->mainImage && $this->imageFolder) {
             return $this->imageFolder . '/' . $this->mainImage;
         }
-        return $this->mainImage;
+        return $this->mainImage ?: null;
     }
+
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
     #[ORM\Id]

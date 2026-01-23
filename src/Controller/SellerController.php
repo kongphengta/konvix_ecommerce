@@ -10,6 +10,9 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
+use App\Entity\Coupon;
+use App\Form\CouponType;
+use App\Repository\CouponRepository;
 
 class SellerController extends AbstractController
 {
@@ -199,5 +202,131 @@ class SellerController extends AbstractController
         return $this->render('seller/new_product.html.twig', [
             'form' => $form->createView(),
         ]);
+    }
+        // ========== GESTION DES CODES PROMO ==========
+
+    #[Route('/seller/coupons', name: 'seller_coupons_list')]
+    public function listCoupons(CouponRepository $couponRepository): Response
+    {
+        $seller = $this->getUser();
+        
+        if (!$this->isGranted('ROLE_SELLER')) {
+            $this->addFlash('error', 'Accès réservé aux vendeurs');
+            return $this->redirectToRoute('app_home');
+        }
+
+        $coupons = $couponRepository->findBy(
+            ['seller' => $seller],
+            ['createdAt' => 'DESC']
+        );
+
+        return $this->render('seller/coupons/list.html.twig', [
+            'coupons' => $coupons,
+        ]);
+    }
+
+    #[Route('/seller/coupon/new', name: 'seller_coupon_new')]
+    public function newCoupon(Request $request, EntityManagerInterface $em): Response
+    {
+        $seller = $this->getUser();
+        
+        if (!$this->isGranted('ROLE_SELLER')) {
+            $this->addFlash('error', 'Accès réservé aux vendeurs');
+            return $this->redirectToRoute('app_home');
+        }
+
+        $coupon = new Coupon();
+        $coupon->setSeller($seller);
+        
+        $form = $this->createForm(CouponType::class, $coupon);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Vérifier que le code n'existe pas déjà
+            $existingCoupon = $em->getRepository(Coupon::class)->findOneBy(['code' => $coupon->getCode()]);
+            
+            if ($existingCoupon) {
+                $this->addFlash('error', 'Ce code promo existe déjà.  Veuillez en choisir un autre.');
+            } else {
+                // Validation du montant selon le type
+                if ($coupon->getType() === 'percentage' && $coupon->getDiscount() > 100) {
+                    $this->addFlash('error', 'Le pourcentage ne peut pas dépasser 100%');
+                } else {
+                    $em->persist($coupon);
+                    $em->flush();
+
+                    $this->addFlash('success', 'Code promo créé avec succès !');
+                    return $this->redirectToRoute('seller_coupons_list');
+                }
+            }
+        }
+
+        return $this->render('seller/coupons/new.html.twig', [
+            'form' => $form->createView(),
+        ]);
+    }
+
+    #[Route('/seller/coupon/{id}/edit', name: 'seller_coupon_edit')]
+    public function editCoupon(Coupon $coupon, Request $request, EntityManagerInterface $em): Response
+    {
+        $seller = $this->getUser();
+        
+        if (!$this->isGranted('ROLE_SELLER') || $coupon->getSeller() !== $seller) {
+            $this->addFlash('error', 'Vous ne pouvez pas modifier ce code promo');
+            return $this->redirectToRoute('seller_coupons_list');
+        }
+
+        $originalCode = $coupon->getCode();
+        
+        $form = $this->createForm(CouponType::class, $coupon);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Si le code a été modifié, vérifier qu'il n'existe pas déjà
+            if ($coupon->getCode() !== $originalCode) {
+                $existingCoupon = $em->getRepository(Coupon::class)->findOneBy(['code' => $coupon->getCode()]);
+                
+                if ($existingCoupon) {
+                    $this->addFlash('error', 'Ce code promo existe déjà. Veuillez en choisir un autre.');
+                    return $this->render('seller/coupons/edit.html.twig', [
+                        'form' => $form->createView(),
+                        'coupon' => $coupon,
+                    ]);
+                }
+            }
+
+            // Validation du montant selon le type
+            if ($coupon->getType() === 'percentage' && $coupon->getDiscount() > 100) {
+                $this->addFlash('error', 'Le pourcentage ne peut pas dépasser 100%');
+            } else {
+                $em->flush();
+                $this->addFlash('success', 'Code promo modifié avec succès !');
+                return $this->redirectToRoute('seller_coupons_list');
+            }
+        }
+
+        return $this->render('seller/coupons/edit.html.twig', [
+            'form' => $form->createView(),
+            'coupon' => $coupon,
+        ]);
+    }
+
+    #[Route('/seller/coupon/{id}/delete', name: 'seller_coupon_delete', methods: ['POST'])]
+    public function deleteCoupon(Coupon $coupon, Request $request, EntityManagerInterface $em): Response
+    {
+        $seller = $this->getUser();
+        
+        if (!$this->isGranted('ROLE_SELLER') || $coupon->getSeller() !== $seller) {
+            $this->addFlash('error', 'Vous ne pouvez pas supprimer ce code promo');
+            return $this->redirectToRoute('seller_coupons_list');
+        }
+
+        if ($this->isCsrfTokenValid('delete'.$coupon->getId(), $request->request->get('_token'))) {
+            $em->remove($coupon);
+            $em->flush();
+            $this->addFlash('success', 'Code promo supprimé avec succès');
+        }
+
+        return $this->redirectToRoute('seller_coupons_list');
     }
 }

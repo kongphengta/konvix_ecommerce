@@ -7,15 +7,24 @@
 			</div>
 			<div style="margin-bottom: 1rem;">
 				{% if order is defined %}
-					<strong>Numéro de commande :</strong> {{ order.id }}<br>
-					<strong>Date de commande :</strong> {{ order.createdAt|date('d/m/Y H:i') }}<br>
-					<strong>Transporteur :</strong> {{ order.transporteur }}<br>
-					<strong>Frais de livraison :</strong> {{ order.fraisLivraison|number_format(2, ',', ' ') }} €
+					<strong>Numéro de commande :</strong>
+					{{ order.id }}<br>
+					<strong>Date de commande :</strong>
+					{{ order.createdAt|date('d/m/Y H:i') }}<br>
+					<strong>Transporteur :</strong>
+					{{ order.transporteur }}<br>
+					<strong>Frais de livraison :</strong>
+					{{ order.fraisLivraison|number_format(2, ',', ' ') }}
+					€
 				{% else %}
 					<strong>Commande test PayPal (pas d'ID)</strong><br>
-					<strong>Date de commande :</strong> {{ "now"|date('d/m/Y H:i') }}<br>
-					<strong>Transporteur :</strong> {{ transporteur.name|default('-') }}<br>
-					<strong>Frais de livraison :</strong> {{ transporteur.price|number_format(2, ',', ' ') }} €
+					<strong>Date de commande :</strong>
+					{{ "now"|date('d/m/Y H:i') }}<br>
+					<strong>Transporteur :</strong>
+					{{ transporteur.name|default('-') }}<br>
+					<strong>Frais de livraison :</strong>
+					{{ transporteur.price|number_format(2, ',', ' ') }}
+					€
 				{% endif %}
 			</div>
 			<p>Bonjour
@@ -61,9 +70,11 @@
 						<td colspan="3" align="right" style="font-weight:bold;">Frais de livraison :</td>
 						<td align="right">
 							{% if order is defined %}
-								{{ order.fraisLivraison|number_format(2, '.', ' ') }} €
+								{{ order.fraisLivraison|number_format(2, '.', ' ') }}
+								€
 							{% else %}
-								{{ transporteur.price|number_format(2, '.', ' ') }} €
+								{{ transporteur.price|number_format(2, '.', ' ') }}
+								€
 							{% endif %}
 						</td>
 					</tr>
@@ -71,9 +82,11 @@
 						<td colspan="3" align="right" style="font-weight:bold; color:#0072ff;">Total TTC :</td>
 						<td align="right" style="font-weight:bold; color:#0072ff;">
 							{% if order is defined %}
-								{{ (totalHT + order.fraisLivraison)|number_format(2, '.', ' ') }} €
+								{{ (totalHT + order.fraisLivraison)|number_format(2, '.', ' ') }}
+								€
 							{% else %}
-								{{ (totalHT + transporteur.price)|number_format(2, '.', ' ') }} €
+								{{ (totalHT + transporteur.price)|number_format(2, '.', ' ') }}
+								€
 							{% endif %}
 						</td>
 					</tr>
@@ -81,23 +94,30 @@
 			</table>
 			<h3>Adresse de livraison</h3>
 			<div style="margin-bottom:1em;">
-				<strong>{{ user.firstname }} {{ user.lastname }}</strong><br>
+				<strong>{{ user.firstname }}
+					{{ user.lastname }}</strong><br>
 				{% if address is defined %}
 					{{ address.address }}<br>
 					{{ address.city }}<br>
-					{{ address.zip }} {{ address.country }}<br>
-					Tél : {{ address.phone }}
+					{{ address.zip }}
+					{{ address.country }}<br>
+					Tél :
+					{{ address.phone }}
 				{% else %}
 					{{ user.address|default('') }}<br>
 					{{ user.city|default('') }}<br>
-					{{ user.postalCode|default('') }} {{ user.country|default('') }}<br>
-					{% if user.phone is defined %}Tél : {{ user.phone }}{% endif %}
+					{{ user.postalCode|default('') }}
+					{{ user.country|default('') }}<br>
+					{% if user.phone is defined %}Tél :
+						{{ user.phone }}
+					{% endif %}
 				{% endif %}
 			</div>
 			<h3>Expédition</h3>
 			<div>
 				{% if transporteur is defined %}
-					Votre commande sera expédiée via <strong>{{ transporteur.name }}</strong>.
+					Votre commande sera expédiée via
+					<strong>{{ transporteur.name }}</strong>.
 				{% else %}
 					Votre commande test PayPal a bien été enregistrée.
 				{% endif %}
