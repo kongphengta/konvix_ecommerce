@@ -31,7 +31,7 @@ class CartController extends AbstractController
         $selectedTransporteur = $session->get('cart_transporteur', '');
         return $this->render('cart/index.html.twig', [
             'cart' => $cart,
-            'selectedTransporteur' => $selectedTransporteur
+            'selectedTransporteur' => $selectedTransporteur,
         ]);
     }
 

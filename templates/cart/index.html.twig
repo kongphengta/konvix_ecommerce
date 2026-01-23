@@ -2,6 +2,9 @@
 
 {% block body %}
 	{% for label, messages in app.flashes %}
+		{% for alert in alerts %}
+			<div class="alert alert-danger">{{ alert }}</div>
+		{% endfor %}
 		{% for message in messages %}
 			<div class="alert alert-{{ label == 'warning' ? 'warning' : (label == 'success' ? 'success' : 'info') }}">{{ message }}</div>
 		{% endfor %}
@@ -77,8 +80,12 @@
 							</div>
 							<button type="submit" class="btn btn-success w-100 mt-2">Passer la commande</button>
 							<div class="d-flex flex-column flex-md-row gap-2 mt-3">
-								<a href="/" class="btn btn-outline-primary flex-fill"><i class="bi bi-arrow-left"></i> Continuer mes achats</a>
-								<a href="{{ path('cart_clear') }}" class="btn btn-outline-danger flex-fill"><i class="bi bi-trash"></i> Vider le panier</a>
+								<a href="/" class="btn btn-outline-primary flex-fill">
+									<i class="bi bi-arrow-left"></i>
+									Continuer mes achats</a>
+								<a href="{{ path('cart_clear') }}" class="btn btn-outline-danger flex-fill">
+									<i class="bi bi-trash"></i>
+									Vider le panier</a>
 							</div>
 						</div>
 					</form>

@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="alert alert-success text-center">
+        <h2>Paiement PayPal validé</h2>
+        <p>Merci pour votre commande ! Un email de confirmation vous a été envoyé.</p>
+    </div>
+
+    <h3 class="mt-4 mb-3">Récapitulatif de votre commande</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Produit</th>
+                <th>Prix unitaire</th>
+                <th>Quantité</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% set total = 0 %}
+        {% for item in cart %}
+            <tr>
+                <td>{{ item.product.name }}</td>
+                <td>{{ item.product.price|number_format(2, ',', ' ') }} €</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ (item.product.price * item.quantity)|number_format(2, ',', ' ') }} €</td>
+            </tr>
+            {% set total = total + (item.product.price * item.quantity) %}
+        {% endfor %}
+        </tbody>
+    </table>
+    <div class="mb-3">
+        <strong>Frais de livraison :</strong> {{ transporteur.price|number_format(2, ',', ' ') }} €<br>
+        <strong>Total TTC :</strong> <span class="text-primary" style="font-size:1.2em">{{ (total + transporteur.price)|number_format(2, ',', ' ') }} €</span>
+    </div>
+
+    <h4 class="mt-4">Adresse de livraison</h4>
+    <div class="border p-3 mb-4">
+        <strong>{{ user.firstname }} {{ user.lastname }}</strong><br>
+        {{ user.address }}<br>
+        {{ user.zip }} {{ user.city }}<br>
+        {{ user.country }}<br>
+        {% if user.phone %}Tél : {{ user.phone }}{% endif %}
+    </div>
+
+    <a href="{{ path('checkout_index') }}" class="btn btn-primary">Retour à l'accueil</a>
+</div>
+{% endblock %}

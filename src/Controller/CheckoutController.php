@@ -2,14 +2,16 @@
 
 namespace App\Controller;
 
-use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Email;
-
 use App\Service\CartService;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Mime\Email;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 class CheckoutController extends AbstractController
 {
@@ -53,6 +55,27 @@ class CheckoutController extends AbstractController
                 ];
                 $session->set('checkout_address_billing', $addressBilling);
             }
+            if ($request->isMethod('POST')) {
+                // 🔒 Vérification du stock
+                foreach ($cart as $item) {
+                    $product = $item['product'];
+                    $quantity = $item['quantity'];
+                    if ($product->getStock() < $quantity) {
+                        $this->addFlash('danger', "Stock insuffisant pour le produit : " . $product->getName());
+                        return $this->redirectToRoute('cart_index');
+                    }
+                }
+
+                // ✅ Création de la commande
+                // - Créer Order
+                // - Créer OrderItem
+                // - Décrémenter le stock
+                // - Persist + flush
+                // - Paiement
+                // - Email
+                // - PDF
+                // - Redirection vers confirmation
+            }
             // Vérification du choix du transporteur
             $selected = $request->request->get('transporteur', $session->get('cart_transporteur', ''));
             $transporteurs = [
@@ -71,8 +94,6 @@ class CheckoutController extends AbstractController
             $addressDelivery = $session->get('checkout_address_delivery');
             $addressBilling = $session->get('checkout_address_billing');
         }
-
-        // Centralisation du transporteur : priorité à la session checkout, sinon à la session cart
         // Récupère le transporteur depuis la requête GET si présent (redirection depuis le panier)
         $selected = $request->query->get('transporteur', $session->get('cart_transporteur', ''));
         $transporteurs = [
@@ -113,6 +134,20 @@ class CheckoutController extends AbstractController
         $session = $request->getSession();
         $user = $this->getUser();
         $address = $session->get('checkout_address');
+        $cart = $cartService->getDetailedCart();
+        $session = $request->getSession();
+        $user = $this->getUser();
+        $address = $session->get('checkout_address');
+
+        // 🔒 Vérification du stock AVANT création de commande
+        foreach ($cart as $item) {
+            $product = $item['product'];
+            $quantity = $item['quantity'];
+            if ($product->getStock() < $quantity) {
+                $this->addFlash('danger', "Stock insuffisant pour le produit : " . $product->getName());
+                return $this->redirectToRoute('cart_index');
+            }
+        }
         if (!$address || !$address['address']) {
             $address = [
                 'address' => $user->getAddress(),
@@ -185,8 +220,14 @@ class CheckoutController extends AbstractController
             $orderItem->setPrice($item['product']->getPrice());
             $entityManager->persist($orderItem);
             $order->addOrderItem($orderItem);
-        }
 
+            // Mise à jour du stock produit
+            $product = $item['product'];
+            $currentStock = $product->getStock();
+            $newStock = $currentStock - $item['quantity'];
+            $product->setStock($newStock);
+            $entityManager->persist($product);
+        }
         $entityManager->flush();
         // Préparation du contenu HTML de l'email
         $html = $this->renderView('email/order_confirmation.html.twig', [
@@ -197,7 +238,7 @@ class CheckoutController extends AbstractController
             'order' => $order,
         ]);
         $email = (new Email())
-            ->from('no-reply@konvix.com')
+            ->from('no-reply@konvix.fr')
             ->to($user ? $user->getEmail() : '')
             ->subject('Confirmation de votre commande Konvix')
             ->html($html);
@@ -266,8 +307,9 @@ class CheckoutController extends AbstractController
             'payment_method_types' => ['card'],
             'line_items' => $lineItems,
             'mode' => 'payment',
-            'success_url' => $this->generateUrl('checkout_success', [], 0),
-            'cancel_url' => $this->generateUrl('checkout_cancel', [], 0),
+            'success_url' => $this->generateUrl('checkout_success', [], UrlGeneratorInterface::ABSOLUTE_URL),
+            'cancel_url' => $this->generateUrl('checkout_cancel', [], UrlGeneratorInterface::ABSOLUTE_URL),
+
         ]);
 
         return $this->redirect($session->url);
@@ -283,6 +325,7 @@ class CheckoutController extends AbstractController
         $environment = new \PayPalCheckoutSdk\Core\SandboxEnvironment($clientId, $clientSecret);
         $client = new \PayPalCheckoutSdk\Core\PayPalHttpClient($environment);
 
+
         $items = [];
         $total = 0;
         foreach ($cart as $item) {
@@ -296,6 +339,22 @@ class CheckoutController extends AbstractController
             ];
             $total += $item['product']->getPrice() * $item['quantity'];
         }
+        // Ajouter le frais de livraison (transporteur)
+        $session = $request->getSession();
+        $selected = $session->get('cart_transporteur', '');
+        $transporteurs = [
+            'colissimo' => ['name' => 'Colissimo', 'price' => 5.90],
+            'mondial' => ['name' => 'Mondial Relay', 'price' => 4.50],
+            'chrono' => ['name' => 'Chronopost', 'price' => 12.00],
+        ];
+        $transporteur = $session->get('checkout_transporteur');
+        if (!$transporteur || !isset($transporteur['name'])) {
+            $transporteur = $selected && isset($transporteurs[$selected]) ? $transporteurs[$selected] : ['name' => 'Non renseigné', 'price' => 0.00];
+            $session->set('checkout_transporteur', $transporteur);
+        }
+        $fraisLivraison = $transporteur['price'] ?? 0.0;
+        $totalWithShipping = $total + $fraisLivraison;
+
 
         $order = new \PayPalCheckoutSdk\Orders\OrdersCreateRequest();
         $order->prefer('return=representation');
@@ -304,18 +363,22 @@ class CheckoutController extends AbstractController
             'purchase_units' => [[
                 'amount' => [
                     'currency_code' => 'EUR',
-                    'value' => number_format($total, 2, '.', ''),
+                    'value' => number_format($totalWithShipping, 2, '.', ''),
                     'breakdown' => [
                         'item_total' => [
                             'currency_code' => 'EUR',
                             'value' => number_format($total, 2, '.', ''),
+                        ],
+                        'shipping' => [
+                            'currency_code' => 'EUR',
+                            'value' => number_format($fraisLivraison, 2, '.', ''),
                         ]
                     ]
                 ],
                 'items' => $items,
             ]],
             'application_context' => [
-                'return_url' => $this->generateUrl('checkout_success', [], 0),
+                'return_url' => $this->generateUrl('checkout_success_paypal', [], 0),
                 'cancel_url' => $this->generateUrl('cart_index', [], 0) . '?canceled=1',
             ],
         ];
@@ -328,10 +391,63 @@ class CheckoutController extends AbstractController
                 }
             }
         } catch (\Exception $e) {
+            // Si on est en sandbox, afficher la page de test PayPal
+            // Suppression de la page de test PayPal : on ne l'affiche plus dans le parcours pro
+            // Sinon, comportement normal : message d'erreur et retour panier
             $this->addFlash('danger', 'Erreur PayPal : ' . $e->getMessage());
             return $this->redirectToRoute('cart_index');
         }
 
         return $this->redirectToRoute('cart_index');
+    }
+    #[Route('/checkout/success/paypal', name: 'checkout_success_paypal')]
+    public function successPaypal(
+        Request $request,
+        CartService $cartService,
+        EntityManagerInterface $em,
+        MailerInterface $mailer,
+        TokenStorageInterface $tokenStorage
+    ): Response {
+
+        // 1. Récupérer et valider la commande (simulation ici)
+        $cart = $cartService->getDetailedCart();
+        $user = $tokenStorage->getToken()->getUser();
+        $session = $request->getSession();
+        $address = $session->get('checkout_address');
+        $selected = $session->get('cart_transporteur', '');
+        $transporteurs = [
+            'colissimo' => ['name' => 'Colissimo', 'price' => 5.90],
+            'mondial' => ['name' => 'Mondial Relay', 'price' => 4.50],
+            'chrono' => ['name' => 'Chronopost', 'price' => 12.00],
+        ];
+        $transporteur = $session->get('checkout_transporteur');
+        if (!$transporteur || !isset($transporteur['name'])) {
+            $transporteur = $selected && isset($transporteurs[$selected]) ? $transporteurs[$selected] : ['name' => 'Non renseigné', 'price' => 0.00];
+            $session->set('checkout_transporteur', $transporteur);
+        }
+        // 3. Envoyer l’email de confirmation de commande
+
+        $html = $this->renderView('email/order_confirmation.html.twig', [
+            'user' => $user,
+            'cart' => $cart,
+            'address' => $address,
+            'transporteur' => $transporteur,
+        ]);
+
+        $email = (new Email())
+            ->from('no-reply@konvix.com')
+            ->to($user->getEmail())
+            ->subject('Confirmation de votre commande Konvix')
+            ->html($html);
+
+        $mailer->send($email);
+
+        // 4. Afficher la page de confirmation
+        return $this->render('checkout/success_paypal.html.twig', [
+            'cart' => $cart,
+            'user' => $user,
+            'address' => $address,
+            'transporteur' => $transporteur,
+        ]);
     }
 }
