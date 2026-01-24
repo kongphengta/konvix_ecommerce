@@ -3,11 +3,14 @@
 namespace App\Controller;
 
 use App\Service\CartService;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\Mime\Email;
+use App\Repository\ProductRepository;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class CartController extends AbstractController
 {
@@ -34,13 +37,49 @@ class CartController extends AbstractController
             'selectedTransporteur' => $selectedTransporteur,
         ]);
     }
-
     #[Route('/cart/add/{id}', name: 'cart_add')]
-    public function add($id, CartService $cartService, Request $request): RedirectResponse
+    public function add($id, CartService $cartService, Request $request, ProductRepository $productRepository, MailerInterface $mailer): RedirectResponse
     {
+        $product = $productRepository->find($id);
+
+        if (!$product) {
+            throw $this->createNotFoundException('Produit introuvable.');
+        }
+
+        if ($product->getStock() <= 0) {
+            $this->addFlash('danger', 'Ce produit est en rupture de stock.');
+            return $this->redirectToRoute('app_product_show', ['id' => $product->getId()]);
+        }
+
         $quantity = $request->query->get('quantity', 1);
         $cartService->add($id, $quantity);
         $this->addFlash('success', 'Produit ajouté au panier !');
+
+        // 🔔 Alerte admin si stock critique
+        $newStock = $product->getStock() - $quantity;
+
+        if ($newStock <= 2) {
+            $user = $this->getUser();
+            $email = 'inconnu';
+
+            if ($user instanceof \App\Entity\User) {
+                $email = $user->getEmail();
+            }
+
+            $adminEmail = 'admin@konvix.com';
+            $adminAlert = (new Email())
+                ->from('no-reply@konvix.fr')
+                ->to($adminEmail)
+                ->subject('⚠️ Stock critique détecté')
+                ->html("
+                <p><strong>Produit :</strong> {$product->getName()}</p>
+                <p><strong>Stock restant :</strong> {$newStock}</p>
+                <p><strong>Commande passée par :</strong> {$email}</p>
+            ");
+
+            $mailer->send($adminAlert);
+        }
+
         return $this->redirectToRoute('cart_index');
     }
 

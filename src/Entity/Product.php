@@ -123,6 +123,9 @@ class Product
     #[ORM\OneToMany(targetEntity: Review::class, mappedBy: 'product', orphanRemoval: true, cascade: ['remove'])]
     private Collection $reviews;
 
+    #[ORM\Column(type: 'integer', options: ['default' => 5])]
+    private int $criticalThreshold = 5;
+
     public function __construct()
     {
         $this->productImages = new ArrayCollection();
@@ -230,6 +233,17 @@ class Product
     public function getProductImages(): Collection
     {
         return $this->productImages;
+    }
+
+    public function getCriticalThreshold(): int
+    {
+        return $this->criticalThreshold;
+    }
+
+    public function setCriticalThreshold(int $criticalThreshold): self
+    {
+        $this->criticalThreshold = $criticalThreshold;
+        return $this;
     }
 
     public function addProductImage(ProductImage $productImage): static

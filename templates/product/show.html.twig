@@ -87,74 +87,7 @@
 						Favoris
 					</span>
 					<hr class="my-3">
-					<div class="d-flex align-items-center gap-3 mb-3">
-						{% if app.user and not alreadyReviewed %}
-							<a href="#review-form" class="btn btn-primary fw-semibold">
-								<i class="bi bi-pencil-square me-2"></i>Donner mon avis
-							</a>
-						{% endif %}
-						<span style="color: #0072ff; font-size: 1.08em; font-weight: 500; letter-spacing: 0.01em;">Votre avis aide les autres clients<br>et améliore nos produits !</span>
-					</div>
-					{% if app.user and not alreadyReviewed %}
-						<div id="review-form" class="mb-4">
-							<div class="card shadow-sm border-0 mb-3" style="max-width: 480px;">
-								<div class="card-header bg-light border-bottom-0 pb-2">
-									<span class="fw-bold fs-5">
-										<i class="bi bi-chat-left-text me-2"></i>Laisser un avis sur ce produit</span>
-								</div>
-								<div class="card-body pt-3">
-									{{ form_start(reviewForm) }}
-									<div class="mb-3">
-										<label class="form-label fw-semibold">Note</label>
-										<div class="d-flex gap-2 align-items-center" id="star-rating-review">
-											{% for idx, choice in reviewForm.rating %}
-												<input type="radio" id="star{{ idx }}" name="{{ choice.vars.full_name }}" value="{{ choice.vars.value }}" {% if choice.vars.checked %} checked {% endif %} style="display:none;">
-												<label for="star{{ idx }}" style="cursor:pointer; font-size:2em; color:#ffc107; margin-bottom:0;">
-													<i class="bi bi-star{% if choice.vars.checked %}-fill{% endif %}"></i>
-												</label>
-											{% endfor %}
-											{{ form_widget(reviewForm.rating, {'attr': {'class': 'd-none', 'style': 'display:none;'}}) }}
-											{{ form_errors(reviewForm.rating) }}
-										</div>
-									</div>
-									<script>
-										document.addEventListener('DOMContentLoaded', function () {
-const stars = document.querySelectorAll('#star-rating-review label i');
-const radios = document.querySelectorAll('#star-rating-review input[type="radio"]');
-radios.forEach((radio, idx) => {
-radio.addEventListener('change', function () {
-stars.forEach((star, sidx) => {
-if (sidx <= idx) {
-star.classList.add('bi-star-fill');
-star.classList.remove('bi-star');
-} else {
-star.classList.remove('bi-star-fill');
-star.classList.add('bi-star');
-}
-});
-});
-});
-});
-									</script>
-									<div class="mb-3">
-										<label class="form-label fw-semibold">Votre avis</label>
-										{{ form_widget(reviewForm.comment, {'attr': {'class': 'form-control', 'rows': 4, 'placeholder': 'Partagez votre expérience avec ce produit...'}}) }}
-										{{ form_errors(reviewForm.comment) }}
-									</div>
-									<div class="d-flex justify-content-end">
-										<button type="submit" class="btn btn-success px-4">
-											<i class="bi bi-send me-1"></i>Envoyer mon avis
-										</button>
-									</div>
-									{{ form_rest(reviewForm) }}
-									{{ form_end(reviewForm) }}
-								</div>
-							</div>
-						</div>
-					{% elseif alreadyReviewed %}
-						<div class="alert alert-info">Vous avez déjà laissé un avis pour ce produit.</div>
-					{% endif %}
-					<!-- Description déplacée dans un bloc horizontal sous la grille -->
+
 				</div>
 				<!-- Colonne droite : stock, panier, paiement -->
 				<div class="col-lg-3 col-md-12 col-12 mb-3">
@@ -169,6 +102,17 @@ star.classList.add('bi-star');
 					<form method="get" action="{{ path('cart_add', {'id': product.id}) }}" class="mb-3">
 						<label for="quantity" class="form-label">Quantité</label>
 						<input type="number" id="quantity" name="quantity" value="1" min="1" class="form-control mb-2" style="max-width: 80px;">
+						{% if product.stock <= 0 %}
+							<div class="alert alert-danger text-center fw-bold fs-5">
+								🚫 Ce produit est en rupture de stock
+							</div>
+						{% elseif product.stock <= 2 %}
+							<div class="alert alert-warning text-center fw-bold fs-6">
+								⚠️ Stock très limité :
+								{{ product.stock }}
+								unité(s)
+							</div>
+						{% endif %}
 						<button type="submit" class="btn btn-primary w-100 mb-2" style="font-size:1.15em; padding:0.7em 0;">
 							<i class="bi bi-cart-plus"></i>
 							Ajouter au panier
@@ -205,120 +149,191 @@ star.classList.add('bi-star');
 						</form>
 					{% endif %}
 				</div>
+				<!-- Section avis et formulaire -->
+				<div class="d-flex align-items-center gap-3 mb-3">
+					{% if app.user and not alreadyReviewed %}
+						<a href="#review-form" class="btn btn-primary fw-semibold">
+							<i class="bi bi-pencil-square me-2"></i>Donner mon avis
+						</a>
+					{% endif %}
+					<span style="color: #0072ff; font-size: 1.08em; font-weight: 500; letter-spacing: 0.01em;">Votre avis aide les autres clients<br>et améliore nos produits !</span>
+				</div>
+				{% if app.user and not alreadyReviewed %}
+					<div id="review-form" class="mb-4">
+						<div class="card shadow-sm border-0 mb-3" style="max-width: 480px;">
+							<div class="card-header bg-light border-bottom-0 pb-2">
+								<span class="fw-bold fs-5">
+									<i class="bi bi-chat-left-text me-2"></i>Laisser un avis sur ce produit</span>
+							</div>
+							<div class="card-body pt-3">
+								{{ form_start(reviewForm) }}
+								<div class="mb-3">
+									<label class="form-label fw-semibold">Note</label>
+									<div class="d-flex gap-2 align-items-center" id="star-rating-review">
+										{% for idx, choice in reviewForm.rating %}
+											<input type="radio" id="star{{ idx }}" name="{{ choice.vars.full_name }}" value="{{ choice.vars.value }}" {% if choice.vars.checked %} checked {% endif %} style="display:none;">
+											<label for="star{{ idx }}" style="cursor:pointer; font-size:2em; color:#ffc107; margin-bottom:0;">
+												<i class="bi bi-star{% if choice.vars.checked %}-fill{% endif %}"></i>
+											</label>
+										{% endfor %}
+										{{ form_widget(reviewForm.rating, {'attr': {'class': 'd-none', 'style': 'display:none;'}}) }}
+										{{ form_errors(reviewForm.rating) }}
+									</div>
+								</div>
+								<div class="mb-3">
+									<label class="form-label fw-semibold">Votre avis</label>
+									{{ form_widget(reviewForm.comment, {'attr': {'class': 'form-control', 'rows': 4, 'placeholder': 'Partagez votre expérience avec ce produit...'}}) }}
+									{{ form_errors(reviewForm.comment) }}
+								</div>
+								<div class="d-flex justify-content-end">
+									<button type="submit" class="btn btn-success px-4">
+										<i class="bi bi-send me-1"></i>Envoyer mon avis
+									</button>
+								</div>
+								{{ form_rest(reviewForm) }}
+								{{ form_end(reviewForm) }}
+							</div>
+						</div>
+					</div>
+				{% elseif alreadyReviewed %}
+					<div class="alert alert-info">Vous avez déjà laissé un avis pour ce produit.</div>
+				{% endif %}
+				<!-- Description déplacée dans un bloc horizontal sous la grille -->
 			</div>
 		</div>
-	</div>
-</div><!-- Modal Bootstrap pour le zoom avec navigation --><div class="modal fade" id="zoomModal" tabindex="-1" aria-labelledby="zoomModalLabel" aria-hidden="true">
-	<div class="modal-dialog modal-fullscreen m-0" style="max-width:100vw; max-height:100vh;">
-		<div class="modal-content bg-transparent border-0 w-100 h-100">
-			<div class="modal-body p-0 w-100 h-100 d-flex justify-content-center align-items-center position-relative" style="overflow:hidden; min-height:100vh; min-width:100vw; background:rgba(10,10,10,0.95);">
-				<div class="position-relative d-flex justify-content-center align-items-center w-100 h-100">
-					<button type="button" class="btn-close-custom position-absolute" style="top: 24px; right: 32px; z-index: 40; background: rgba(30,30,30,0.4); width: 2.2rem; height: 2.2rem; border-radius: 50%; box-shadow: none; display: flex; align-items: center; justify-content: center; border: none;" data-bs-dismiss="modal" aria-label="Fermer">
-						<span style="display:block; width:1.2rem; height:1.2rem; position:relative;">
-							<span style="position:absolute; left:0; top:50%; width:100%; height:2px; background:#fff; border-radius:2px; transform:rotate(45deg) translateY(-50%);"></span>
-							<span style="position:absolute; left:0; top:50%; width:100%; height:2px; background:#fff; border-radius:2px; transform:rotate(-45deg) translateY(-50%);"></span>
-						</span>
-					</button>
-					<div class="zoom-img-container position-relative d-flex justify-content-center align-items-center" style="display:inline-flex;">
-						<button type="button" class="btn btn-light position-absolute" id="zoomPrevBtn" style="left: -60px; top: 50%; transform: translateY(-50%); z-index: 31; opacity: 0.92; background: rgba(255,255,255,0.85); border-radius: 50%; padding: 0.5rem 1.1rem; font-size:2rem; box-shadow:0 2px 8px #0003;">
-							&#8592;
-						</button>
-						<img src="/uploads/product_images/{{ product.ImageFolder }}/{{ product.mainImage }}" id="zoomedImage" class="zoomed-img" style="max-width:100vw; max-height:100vh; object-fit:contain; margin:auto; display:block; box-shadow:0 0 32px #000a; border-radius:16px;">
-						<button type="button" class="btn btn-light position-absolute" id="zoomNextBtn" style="right: -60px; top: 50%; transform: translateY(-50%); z-index: 31; opacity: 0.92; background: rgba(255,255,255,0.85); border-radius: 50%; padding: 0.5rem 1.1rem; font-size:2rem; box-shadow:0 2px 8px #0003;">
-							&#8594;
-						</button>
+		<!-- Modal Bootstrap pour le zoom avec navigation -->
+		<div class="modal fade" id="zoomModal" tabindex="-1" aria-labelledby="zoomModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-fullscreen m-0" style="max-width:100vw; max-height:100vh;">
+				<div class="modal-content bg-transparent border-0 w-100 h-100">
+					<div class="modal-body p-0 w-100 h-100 d-flex justify-content-center align-items-center position-relative" style="overflow:hidden; min-height:100vh; min-width:100vw; background:rgba(10,10,10,0.95);">
+						<div class="position-relative d-flex justify-content-center align-items-center w-100 h-100">
+							<button type="button" class="btn-close-custom position-absolute" style="top: 24px; right: 32px; z-index: 40; background: rgba(30,30,30,0.4); width: 2.2rem; height: 2.2rem; border-radius: 50%; box-shadow: none; display: flex; align-items: center; justify-content: center; border: none;" data-bs-dismiss="modal" aria-label="Fermer">
+								<span style="display:block; width:1.2rem; height:1.2rem; position:relative;">
+									<span style="position:absolute; left:0; top:50%; width:100%; height:2px; background:#fff; border-radius:2px; transform:rotate(45deg) translateY(-50%);"></span>
+									<span style="position:absolute; left:0; top:50%; width:100%; height:2px; background:#fff; border-radius:2px; transform:rotate(-45deg) translateY(-50%);"></span>
+								</span>
+							</button>
+							<div class="zoom-img-container position-relative d-flex justify-content-center align-items-center" style="display:inline-flex;">
+								<button type="button" class="btn btn-light position-absolute" id="zoomPrevBtn" style="left: -60px; top: 50%; transform: translateY(-50%); z-index: 31; opacity: 0.92; background: rgba(255,255,255,0.85); border-radius: 50%; padding: 0.5rem 1.1rem; font-size:2rem; box-shadow:0 2px 8px #0003;">
+									&#8592;
+								</button>
+								<img src="/uploads/product_images/{{ product.ImageFolder }}/{{ product.mainImage }}" id="zoomedImage" class="zoomed-img" style="max-width:100vw; max-height:100vh; object-fit:contain; margin:auto; display:block; box-shadow:0 0 32px #000a; border-radius:16px;">
+								<button type="button" class="btn btn-light position-absolute" id="zoomNextBtn" style="right: -60px; top: 50%; transform: translateY(-50%); z-index: 31; opacity: 0.92; background: rgba(255,255,255,0.85); border-radius: 50%; padding: 0.5rem 1.1rem; font-size:2rem; box-shadow:0 2px 8px #0003;">
+									&#8594;
+								</button>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
-	</div>
-</div>
-<style>
-	#zoomModal .modal-dialog {
-		width: 100vw;
-		height: 100vh;
-		margin: 0;
-		max-width: 100vw;
-		max-height: 100vh;
-	}
-	#zoomModal .modal-content {
-		background: transparent;
-		border: none;
-		width: 100vw;
-		height: 100vh;
-	}
-	#zoomModal .modal-body {
-		min-height: 100vh;
-		min-width: 100vw;
-		let images = [mainImg.src];
-		images = Array.from(thumbs).map(t => t.getAttribute('src'));
-		display: inline-flex;
-		justify-content: center;
-		align-items: center;
-		width: auto;
-		height: auto;
-		max-width: 100vw;
-		max-height: 100vh;
-	}
-	thumbs.forEach((thumb, i) => { thumb.style.borderColor =(i === idx) ? '#0072ff' : '#eee'; thumb.style.boxShadow =(i === idx) ? '0 0 0 2px #0072ff55' : 'none'; });
-	#zoomModal .zoomed-img {
-		max-width: 100vw;
-		max-height: 100vh;
-		object-fit: contain;
-		margin: auto;
-		display: block;
-		box-shadow: 0 0 32px #000a;
-		border-radius: 16px;
-	}
-	#zoomModal .btn-close-custom {
-		position: absolute;
-		top: 24px;
-		right: 32px;
-		z-index: 40;
-		background: rgba(30, 30, 30, 0.4);
-		width: 2.2rem;
-		height: 2.2rem;
-		border-radius: 50%;
-		box-shadow: none;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		border: none;
-		transition: background 0.2s;
-		cursor: pointer;
-	}
-	#zoomModal .btn-close-custom:hover {
-		background: rgba(30, 30, 30, 0.7);
-	}
-	#zoomModal .zoom-img-container #zoomPrevBtn {
-		left: -60px;
-		right: auto;
-		top: 50%;
-		transform: translateY(-50%);
-		z-index: 31;
-		opacity: 0.92;
-		background: rgba(255, 255, 255, 0.85);
-		border-radius: 50%;
-		padding: 0.5rem 1.1rem;
-		font-size: 2rem;
-		box-shadow: 0 2px 8px #0003;
-	}
-	#zoomModal .zoom-img-container #zoomNextBtn {
-		right: -60px;
-		left: auto;
-		top: 50%;
-		transform: translateY(-50%);
-		z-index: 31;
-		opacity: 0.92;
-		background: rgba(255, 255, 255, 0.85);
-		border-radius: 50%;
-		padding: 0.5rem 1.1rem;
-		font-size: 2rem;
-		box-shadow: 0 2px 8px #0003;
-	}
-</style>
-<script>
-	document.addEventListener('DOMContentLoaded', function () {
+		<style>
+			#zoomModal .modal-dialog {
+				width: 100vw;
+				height: 100vh;
+				margin: 0;
+				max-width: 100vw;
+				max-height: 100vh;
+			}
+			#zoomModal .modal-content {
+				background: transparent;
+				border: none;
+				width: 100vw;
+				height: 100vh;
+			}
+			#zoomModal .modal-body {
+				min-height: 100vh;
+				min-width: 100vw;
+				let images = [mainImg.src];
+				images = Array.from(thumbs).map(t => t.getAttribute('src'));
+				display: inline-flex;
+				justify-content: center;
+				align-items: center;
+				width: auto;
+				height: auto;
+				max-width: 100vw;
+				max-height: 100vh;
+			}
+			thumbs.forEach((thumb, i) => { thumb.style.borderColor =(i === idx) ? '#0072ff' : '#eee'; thumb.style.boxShadow =(i === idx) ? '0 0 0 2px #0072ff55' : 'none'; });
+			#zoomModal .zoomed-img {
+				max-width: 100vw;
+				max-height: 100vh;
+				object-fit: contain;
+				margin: auto;
+				display: block;
+				box-shadow: 0 0 32px #000a;
+				border-radius: 16px;
+			}
+			#zoomModal .btn-close-custom {
+				position: absolute;
+				top: 24px;
+				right: 32px;
+				z-index: 40;
+				background: rgba(30, 30, 30, 0.4);
+				width: 2.2rem;
+				height: 2.2rem;
+				border-radius: 50%;
+				box-shadow: none;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				border: none;
+				transition: background 0.2s;
+				cursor: pointer;
+			}
+			#zoomModal .btn-close-custom:hover {
+				background: rgba(30, 30, 30, 0.7);
+			}
+			#zoomModal .zoom-img-container #zoomPrevBtn {
+				left: -60px;
+				right: auto;
+				top: 50%;
+				transform: translateY(-50%);
+				z-index: 31;
+				opacity: 0.92;
+				background: rgba(255, 255, 255, 0.85);
+				border-radius: 50%;
+				padding: 0.5rem 1.1rem;
+				font-size: 2rem;
+				box-shadow: 0 2px 8px #0003;
+			}
+			#zoomModal .zoom-img-container #zoomNextBtn {
+				right: -60px;
+				left: auto;
+				top: 50%;
+				transform: translateY(-50%);
+				z-index: 31;
+				opacity: 0.92;
+				background: rgba(255, 255, 255, 0.85);
+				border-radius: 50%;
+				padding: 0.5rem 1.1rem;
+				font-size: 2rem;
+				box-shadow: 0 2px 8px #0003;
+			}
+		</style>
+
+		{% block javascripts %}
+			<script>
+				document.addEventListener('DOMContentLoaded', function () {
+const stars = document.querySelectorAll('#star-rating-review label i');
+const radios = document.querySelectorAll('#star-rating-review input[type="radio"]');
+radios.forEach((radio, idx) => {
+radio.addEventListener('change', function () {
+stars.forEach((star, sidx) => {
+if (sidx <= idx) {
+star.classList.add('bi-star-fill');
+star.classList.remove('bi-star');
+} else {
+star.classList.remove('bi-star-fill');
+star.classList.add('bi-star');
+}
+});
+});
+});
+});
+			</script>
+			<script>
+				document.addEventListener('DOMContentLoaded', function () {
 const mainImg = document.getElementById('mainProductImage');
 const zoomedImg = document.getElementById('zoomedImage');
 const thumbs = document.querySelectorAll('.thumb-img');
@@ -371,4 +386,6 @@ document.body.classList.remove('modal-open');
 document.body.style = '';
 });
 });
-</script>{% endblock %}
+			</script>
+		{% endblock %}
+	{% endblock %}

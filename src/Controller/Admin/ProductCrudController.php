@@ -71,6 +71,23 @@ class ProductCrudController extends AbstractCrudController
             AssociationField::new('category'),
             AssociationField::new('seller'),
             BooleanField::new('isValidated', 'Validé'),
+
+            IntegerField::new('stock')
+                ->setLabel('Alerte stock')
+                ->formatValue(function ($value, $entity) {
+                    $stock = $entity->getStock();
+                    $threshold = method_exists($entity, 'getCriticalThreshold') ? $entity->getCriticalThreshold() : 2; // Valeur par défaut si la méthode n'existe pas
+                    if ($stock < 0) {
+                        return '<span class="badge bg-dark">Stock négatif</span>';
+                    } elseif ($stock == 0) {
+                        return '<span class="badge bg-warning text-dark">Rupture</span>';
+                    } elseif ($stock <= $threshold) {
+                        return '<span class="badge bg-danger">Stock critique</span>';
+                    } else {
+                        return '<span class="badge bg-success">OK</span>';
+                    }
+                })
+                ->onlyOnIndex(),
         ];
     }
 }

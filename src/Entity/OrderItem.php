@@ -15,7 +15,7 @@ class OrderItem
 
     #[ORM\ManyToOne(inversedBy: 'orderItems')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Order $oderRef = null;
+    private ?Order $order = null;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
@@ -32,15 +32,14 @@ class OrderItem
         return $this->id;
     }
 
-    public function getOderRef(): ?Order
+    public function getOrder(): ?Order
     {
-        return $this->oderRef;
+        return $this->order;
     }
 
-    public function setOderRef(?Order $oderRef): static
+    public function setOrder(?Order $order): static
     {
-        $this->oderRef = $oderRef;
-
+        $this->order = $order;
         return $this;
     }
 
