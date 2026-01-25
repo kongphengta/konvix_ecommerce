@@ -254,66 +254,6 @@ formDiv.scrollIntoView({behavior: 'smooth', block: 'center'});
 		</div>
 	</div>
 
-	<!-- ========== SECTION AVIS CLIENTS EN PLEINE LARGEUR ========== -->
-	<div class="row mt-5">
-		<div class="col-12">
-			<div class="card shadow-sm border-0">
-				<div class="card-header bg-primary text-white">
-					<h4 class="mb-0">
-						<i class="bi bi-chat-left-text me-2"></i>
-						Avis clients
-						{% if product.reviews|length > 0 %}
-							<span class="badge bg-light text-dark ms-2">{{ product.reviews|length }}</span>
-						{% endif %}
-					</h4>
-				</div>
-				<div
-					class="card-body p-4">
-
-					{# AFFICHAGE DES AVIS EXISTANTS #}
-					{% if product.reviews|length > 0 %}
-
-						{% for review in product. reviews %}
-							<div class="review-item bg-light border border-success border-opacity-25 rounded-3 p-3 mb-3">
-								<div class="d-flex justify-content-between align-items-start mb-2">
-									<div>
-										<strong class="text-dark fs-5">{{ review.user.firstName }}
-											{{ review.user.lastName|first }}.
-										</strong>
-										<div class="star-rating mt-1">
-											{% for i in 1..5 %}
-												{% if i <= review.rating %}
-													<i class="bi bi-star-fill text-warning fs-5"></i>
-												{% else %}
-													<i class="bi bi-star text-muted fs-5"></i>
-												{% endif %}
-											{% endfor %}
-											<span class="ms-2 text-muted fw-bold">{{ review.rating }}/5</span>
-										</div>
-									</div>
-									<small class="text-muted">
-										<i class="bi bi-calendar3 me-1"></i>
-										{{ review.createdAt|date('d/m/Y') }}</small>
-								</div>
-								<p class="mb-0 text-dark">{{ review.comment }}</p>
-							</div>
-						{% endfor %}
-
-					{% else %}
-						<div class="alert alert-info d-flex align-items-center">
-							<i class="bi bi-info-circle fs-4 me-3"></i>
-							<div>
-								<strong>Aucun avis pour le moment.</strong><br>
-								<small>Soyez le premier à partager votre expérience avec ce produit !</small>
-							</div>
-						</div>
-					{% endif %}
-
-				</div>
-			</div>
-		</div>
-	</div>
-	<!-- ========== FIN SECTION AVIS CLIENTS ========== -->
 </div><!-- Modal Bootstrap pour le zoom avec navigation --><div class="modal fade" id="zoomModal" tabindex="-1" aria-labelledby="zoomModalLabel" aria-hidden="true">
 	<div class="modal-dialog modal-fullscreen m-0" style="max-width:100vw; max-height:100vh;">
 		<div class="modal-content bg-transparent border-0 w-100 h-100">
