@@ -158,6 +158,42 @@
 					{% endif %}
 					<span style="color: #0072ff; font-size: 1.08em; font-weight: 500; letter-spacing: 0.01em;">Votre avis aide les autres clients<br>et améliore nos produits !</span>
 				</div>
+
+				<!-- Bloc affichage des avis clients -->
+				<div class="card mt-4">
+					<div class="card-header bg-primary text-white">
+						<i class="bi bi-chat-left-text"></i> Avis clients
+						{% if reviews|length > 0 %}
+							<span class="badge bg-light text-primary ms-2">{{ reviews|length }}</span>
+						{% endif %}
+					</div>
+					<div class="card-body">
+						{% if reviews|length == 0 %}
+							<div class="alert alert-info">
+								<i class="bi bi-info-circle"></i>
+								<b>Aucun avis pour le moment.</b><br>
+								Soyez le premier à partager votre expérience avec ce produit !
+							</div>
+						{% else %}
+							{% for review in reviews %}
+								<div class="mb-4 pb-2 border-bottom">
+									<div class="fw-bold">{{ review.user.email|split('@')[0] }}</div>
+									<div>
+										{% for i in 1..5 %}
+											<i class="bi bi-star{% if i <= review.rating %}-fill{% endif %} text-warning"></i>
+										{% endfor %}
+										<span class="ms-2">{{ review.rating }}/5</span>
+										<span class="text-muted ms-3" style="font-size:0.95em;">
+											<i class="bi bi-calendar"></i>
+											{{ review.createdAt|date('d/m/Y') }}
+										</span>
+									</div>
+									<div class="mt-2">{{ review.comment }}</div>
+								</div>
+							{% endfor %}
+						{% endif %}
+					</div>
+				</div>
 				{% if app.user and not alreadyReviewed %}
 					<div id="review-form" class="mb-4" style="display:none;">
 						<div class="card shadow-sm border-0 mb-3" style="max-width: 480px;">
