@@ -33,15 +33,65 @@ class Review
     #[ORM\Column(type: 'datetime_immutable')]
     private ?\DateTimeImmutable $createdAt = null;
 
-    public function getId(): ?int { return $this->id; }
-    public function getProduct(): ?Product { return $this->product; }
-    public function setProduct(?Product $product): self { $this->product = $product; return $this; }
-    public function getUser(): ?User { return $this->user; }
-    public function setUser(?User $user): self { $this->user = $user; return $this; }
-    public function getRating(): ?int { return $this->rating; }
-    public function setRating(int $rating): self { $this->rating = $rating; return $this; }
-    public function getComment(): ?string { return $this->comment; }
-    public function setComment(string $comment): self { $this->comment = $comment; return $this; }
-    public function getCreatedAt(): ?\DateTimeImmutable { return $this->createdAt; }
-    public function setCreatedAt(\DateTimeImmutable $createdAt): self { $this->createdAt = $createdAt; return $this; }
+    #[ORM\Column(type: 'boolean')]
+    private bool $isValidated = false;
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+    public function getProduct(): ?Product
+    {
+        return $this->product;
+    }
+    public function setProduct(?Product $product): self
+    {
+        $this->product = $product;
+        return $this;
+    }
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+    public function setUser(?User $user): self
+    {
+        $this->user = $user;
+        return $this;
+    }
+    public function getRating(): ?int
+    {
+        return $this->rating;
+    }
+    public function setRating(int $rating): self
+    {
+        $this->rating = $rating;
+        return $this;
+    }
+    public function getComment(): ?string
+    {
+        return $this->comment;
+    }
+    public function setComment(string $comment): self
+    {
+        $this->comment = $comment;
+        return $this;
+    }
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+    public function setCreatedAt(\DateTimeImmutable $createdAt): self
+    {
+        $this->createdAt = $createdAt;
+        return $this;
+    }
+    public function isValidated(): bool
+    {
+        return $this->isValidated;
+    }
+    public function setIsValidated(bool $isValidated): self
+    {
+        $this->isValidated = $isValidated;
+        return $this;
+    }
 }

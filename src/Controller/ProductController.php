@@ -59,6 +59,7 @@ final class ProductController extends AbstractController
             $review->setProduct($product);
             $review->setUser($user);
             $review->setCreatedAt(new \DateTimeImmutable());
+            $review->setIsValidated(false);
             $em->persist($review);
             $em->flush();
             $this->addFlash('success', 'Merci pour votre avis !');
@@ -87,8 +88,11 @@ final class ProductController extends AbstractController
             $this->addFlash('success', 'Merci pour votre avis !');
             return $this->redirectToRoute('app_product_show', ['id' => $product->getId()]);
         }
-
-        $reviews = $product->getReviews();
+        $validatedReviews = $em->getRepository(\App\Entity\Review::class)->findBy([
+            'product' => $product,
+            'isValidated' => true
+        ]);
+        $reviews = $validatedReviews;
 
         // Récupérer les miniatures du dossier du produit
         $imageFolder = $product->getImageFolder();
