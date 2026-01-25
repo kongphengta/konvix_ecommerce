@@ -55,17 +55,6 @@ class CheckoutController extends AbstractController
                 ];
                 $session->set('checkout_address_billing', $addressBilling);
             }
-            if ($request->isMethod('POST')) {
-                // 🔒 Vérification du stock
-                foreach ($cart as $item) {
-                    $product = $item['product'];
-                    $quantity = $item['quantity'];
-                    if ($product->getStock() < $quantity) {
-                        $this->addFlash('danger', "Stock insuffisant pour le produit : " . $product->getName());
-                        return $this->redirectToRoute('cart_index');
-                    }
-                }
-            }
             // Vérification du choix du transporteur
             $selected = $request->request->get('transporteur', $session->get('cart_transporteur', ''));
             $transporteurs = [
@@ -84,6 +73,8 @@ class CheckoutController extends AbstractController
             $addressDelivery = $session->get('checkout_address_delivery');
             $addressBilling = $session->get('checkout_address_billing');
         }
+
+        // Centralisation du transporteur : priorité à la session checkout, sinon à la session cart
         // Récupère le transporteur depuis la requête GET si présent (redirection depuis le panier)
         $selected = $request->query->get('transporteur', $session->get('cart_transporteur', ''));
         $transporteurs = [
@@ -124,20 +115,6 @@ class CheckoutController extends AbstractController
         $session = $request->getSession();
         $user = $this->getUser();
         $address = $session->get('checkout_address');
-        $cart = $cartService->getDetailedCart();
-        $session = $request->getSession();
-        $user = $this->getUser();
-        $address = $session->get('checkout_address');
-
-        // 🔒 Vérification du stock AVANT création de commande
-        foreach ($cart as $item) {
-            $product = $item['product'];
-            $quantity = $item['quantity'];
-            if ($product->getStock() < $quantity) {
-                $this->addFlash('danger', "Stock insuffisant pour le produit : " . $product->getName());
-                return $this->redirectToRoute('cart_index');
-            }
-        }
         if (!$address || !$address['address']) {
             $address = [
                 'address' => $user->getAddress(),
@@ -200,65 +177,18 @@ class CheckoutController extends AbstractController
         $user->addOrder($order);
         $entityManager->persist($order);
         $entityManager->persist($user);
-        $entityManager->flush();
 
         // Création des OrderItem pour chaque produit du panier
         foreach ($cart as $item) {
             $orderItem = new \App\Entity\OrderItem();
-            $orderItem->setOrder($order);
+            $orderItem->setOderRef($order);
             $orderItem->setProduct($item['product']);
             $orderItem->setQuantity($item['quantity']);
             $orderItem->setPrice($item['product']->getPrice());
             $entityManager->persist($orderItem);
             $order->addOrderItem($orderItem);
-
-            // Mise à jour du stock produit
-            $product = $item['product'];
-            $currentStock = $product->getStock();
-            $newStock = $currentStock - $item['quantity'];
-            $product->setStock($newStock);
-            $entityManager->persist($product);
-
-            // 🔔 Alerte si stock critique
-            if ($newStock <= 3) {
-                $message = "⚠️ Stock faible pour le produit : " . $product->getName() . " ($newStock restant)";
-
-                // Alerte visuelle pour l'admin connecté
-                if ($this->isGranted('ROLE_ADMIN')) {
-                    $this->addFlash('warning', $message);
-                }
-
-                // Envoi d'un email à l'admin
-                $user = $this->getUser();
-                $email = 'inconnu';
-
-                if ($user && method_exists($user, 'getEmail')) {
-                    $email = $user->getEmail();
-                }
-                $adminEmail = 'admin@konvix.com';
-                $adminAlert = (new Email())
-                    ->from('no-reply@konvix.fr')
-                    ->to($adminEmail)
-                    ->subject('⚠️ Stock critique détecté')
-                    ->html("
-            <p><strong>Produit :</strong> {$product->getName()}</p>
-            <p><strong>Stock restant :</strong> {$newStock}</p>
-            <p><strong>Commande passée par :</strong> {$email}</p>
-        ");
-
-                $mailer->send($adminAlert);
-            }
-            if ($this->isGranted('ROLE_ADMIN')) {
-                $this->addFlash('warning', "⚠️ Stock faible pour le produit : " . $product->getName() . " ($newStock restant)");
-            };
-            $email = (new Email())
-                ->from('noreply@konvix.fr')
-                ->to('admin@konvix.fr')
-                ->subject('🛎 Stock critique : ' . $product->getName())
-                ->text("Le stock du produit \"" . $product->getName() . "\" est tombé à $newStock unité(s). Pensez à réapprovisionner.");
-
-            $mailer->send($email);
         }
+
         $entityManager->flush();
         // Préparation du contenu HTML de l'email
         $html = $this->renderView('email/order_confirmation.html.twig', [
@@ -285,6 +215,7 @@ class CheckoutController extends AbstractController
             'transporteur' => $transporteur,
         ]);
     }
+
     #[Route('/checkout/pay/stripe', name: 'checkout_pay_stripe')]
     public function payStripe(CartService $cartService, Request $request): Response
     {
@@ -355,7 +286,6 @@ class CheckoutController extends AbstractController
         $environment = new \PayPalCheckoutSdk\Core\SandboxEnvironment($clientId, $clientSecret);
         $client = new \PayPalCheckoutSdk\Core\PayPalHttpClient($environment);
 
-
         $items = [];
         $total = 0;
         foreach ($cart as $item) {
@@ -421,6 +351,7 @@ class CheckoutController extends AbstractController
                 }
             }
         } catch (\Exception $e) {
+            // Si on est en sandbox, afficher la page de test PayPal
             // Suppression de la page de test PayPal : on ne l'affiche plus dans le parcours pro
             // Sinon, comportement normal : message d'erreur et retour panier
             $this->addFlash('danger', 'Erreur PayPal : ' . $e->getMessage());
@@ -454,23 +385,19 @@ class CheckoutController extends AbstractController
             $transporteur = $selected && isset($transporteurs[$selected]) ? $transporteurs[$selected] : ['name' => 'Non renseigné', 'price' => 0.00];
             $session->set('checkout_transporteur', $transporteur);
         }
+
+        // 2. Créer et sauvegarder la commande (à adapter selon ton entité Order)
+        // $order = new Order(); ... $em->persist($order); $em->flush();
+
+
         // 3. Envoyer l’email de confirmation de commande
+
         $html = $this->renderView('email/order_confirmation.html.twig', [
             'user' => $user,
             'cart' => $cart,
             'address' => $address,
             'transporteur' => $transporteur,
         ]);
-        $cartService->clear();
-        // Mise à jour du stock produit
-        foreach ($cart as $item) {
-            $product = $item['product'];
-            $currentStock = $product->getStock();
-            $newStock = $currentStock - $item['quantity'];
-            $product->setStock($newStock);
-            $em->persist($product);
-        }
-        $em->flush();
 
         $email = (new Email())
             ->from('no-reply@konvix.com')
@@ -489,3 +416,4 @@ class CheckoutController extends AbstractController
         ]);
     }
 }
+

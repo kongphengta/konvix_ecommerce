@@ -1,0 +1,157 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes codes promo - Konvix Technology
+{% endblock %}
+
+{% block body %}
+	<div class="container mt-5">
+		<div class="row">
+			<div class="col-12">
+				<div class="d-flex justify-content-between align-items-center mb-4">
+					<h1>
+						<i class="bi bi-ticket-perforated me-2"></i>
+						Mes codes promo</h1>
+					<a href="{{ path('seller_coupon_new') }}" class="btn btn-primary">
+						<i class="bi bi-plus-circle me-2"></i>
+						Créer un code promo
+					</a>
+				</div>
+
+				{% for message in app.flashes('success') %}
+					<div class="alert alert-success alert-dismissible fade show" role="alert">
+						<i class="bi bi-check-circle me-2"></i>
+						{{ message }}
+						<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+					</div>
+				{% endfor %}
+
+				{% for message in app.flashes('error') %}
+					<div class="alert alert-danger alert-dismissible fade show" role="alert">
+						<i class="bi bi-exclamation-triangle me-2"></i>
+						{{ message }}
+						<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+					</div>
+				{% endfor %}
+
+				{% if coupons|length > 0 %}
+					<div class="card shadow-sm">
+						<div class="card-header bg-primary text-white">
+							<h5 class="mb-0">Liste de mes codes promo ({{ coupons|length }})</h5>
+						</div>
+						<div class="card-body p-0">
+							<div class="table-responsive">
+								<table class="table table-hover mb-0">
+									<thead class="table-light">
+										<tr>
+											<th>Code</th>
+											<th>Type</th>
+											<th>Réduction</th>
+											<th>Expiration</th>
+											<th>Utilisations</th>
+											<th>Statut</th>
+											<th class="text-end">Actions</th>
+										</tr>
+									</thead>
+									<tbody>
+										{% for coupon in coupons %}
+											<tr class="{% if not coupon.isValid() %}table-secondary{% endif %}">
+												<td>
+													<strong class="text-primary">{{ coupon.code }}</strong>
+												</td>
+												<td>
+													{% if coupon.type == 'percentage' %}
+														<span class="badge bg-info">Pourcentage</span>
+													{% else %}
+														<span class="badge bg-success">Montant fixe</span>
+													{% endif %}
+												</td>
+												<td>
+													{% if coupon.type == 'percentage' %}
+														<strong>{{ coupon.discount }}%</strong>
+													{% else %}
+														<strong>{{ coupon.discount|number_format(2, ',', ' ') }}
+															€</strong>
+													{% endif %}
+												</td>
+												<td>
+													{% if coupon.expiresAt %}
+														{% if coupon.expiresAt < date() %}
+															<span class="text-danger">
+																<i class="bi bi-exclamation-circle me-1"></i>
+																Expiré le
+																{{ coupon.expiresAt|date('d/m/Y') }}
+															</span>
+														{% else %}
+															<span class="text-muted">
+																{{ coupon.expiresAt|date('d/m/Y à H:i') }}
+															</span>
+														{% endif %}
+													{% else %}
+														<span class="text-success">Illimité</span>
+													{% endif %}
+												</td>
+												<td>
+													{% if coupon.usageLimit %}
+														<span class="{% if coupon.usedCount >= coupon.usageLimit %}text-danger{% else %}text-muted{% endif %}">
+															{{ coupon.usedCount }}
+															/
+															{{ coupon.usageLimit }}
+														</span>
+													{% else %}
+														<span class="text-muted">{{ coupon.usedCount }}
+															(illimité)</span>
+													{% endif %}
+												</td>
+												<td>
+													{% if coupon.isValid() %}
+														<span class="badge bg-success">
+															<i class="bi bi-check-circle me-1"></i>
+															Actif
+														</span>
+													{% else %}
+														<span class="badge bg-secondary">
+															<i class="bi bi-x-circle me-1"></i>
+															Inactif
+														</span>
+													{% endif %}
+												</td>
+												<td class="text-end">
+													<div class="btn-group btn-group-sm">
+														<a href="{{ path('seller_coupon_edit', {id: coupon.id}) }}" class="btn btn-outline-primary" title="Modifier">
+															<i class="bi bi-pencil"></i>
+														</a>
+														<form method="post" action="{{ path('seller_coupon_delete', {id: coupon.id}) }}" style="display: inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce code promo ?');">
+															<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ coupon.id) }}">
+															<button type="submit" class="btn btn-outline-danger" title="Supprimer">
+																<i class="bi bi-trash"></i>
+															</button>
+														</form>
+													</div>
+												</td>
+											</tr>
+										{% endfor %}
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				{% else %}
+					<div class="alert alert-info d-flex align-items-center">
+						<i class="bi bi-info-circle fs-4 me-3"></i>
+						<div>
+							<strong>Aucun code promo pour le moment.</strong><br>
+							<small>Créez votre premier code promo pour offrir des réductions à vos clients !</small>
+						</div>
+					</div>
+				{% endif %}
+
+				<div class="mt-4">
+					<a href="{{ path('seller_dashboard') }}" class="btn btn-secondary">
+						<i class="bi bi-arrow-left me-2"></i>
+						Retour au tableau de bord
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}

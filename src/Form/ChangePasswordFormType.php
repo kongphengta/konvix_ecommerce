@@ -19,7 +19,7 @@ class ChangePasswordFormType extends AbstractType
                 'mapped' => false,
                 'attr' => ['autocomplete' => 'current-password'],
                 'constraints' => [
-                    new NotBlank(['message' => 'Merci de saisir votre mot de passe actuel']),
+                    new NotBlank(message : 'Merci de saisir votre mot de passe actuel'),
                 ],
             ])
             ->add('newPassword', PasswordType::class, [
@@ -27,12 +27,12 @@ class ChangePasswordFormType extends AbstractType
                 'mapped' => false,
                 'attr' => ['autocomplete' => 'new-password'],
                 'constraints' => [
-                    new NotBlank(['message' => 'Merci de saisir un nouveau mot de passe']),
-                    new Length([
-                        'min' => 6,
-                        'minMessage' => 'Le mot de passe doit contenir au moins {{ limit }} caractères',
-                        'max' => 4096,
-                    ]),
+                    new NotBlank(message : 'Merci de saisir un nouveau mot de passe'),
+                    new Length(
+                        min : 6,
+                        minMessage : 'Le mot de passe doit contenir au moins {{ limit }} caractères',
+                        max : 4096,
+                    ),
                 ],
             ])
             ->add('confirmPassword', PasswordType::class, [
@@ -40,7 +40,7 @@ class ChangePasswordFormType extends AbstractType
                 'mapped' => false,
                 'attr' => ['autocomplete' => 'new-password'],
                 'constraints' => [
-                    new NotBlank(['message' => 'Merci de confirmer le nouveau mot de passe']),
+                    new NotBlank(message : 'Merci de confirmer le nouveau mot de passe'),
                 ],
             ])
         ;

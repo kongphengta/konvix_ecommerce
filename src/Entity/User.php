@@ -38,6 +38,38 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $lastName = null;
 
+    #[ORM\OneToMany(mappedBy: 'seller', targetEntity: Coupon::class, cascade: ['remove'], orphanRemoval: true)]
+    private Collection $coupons;
+
+    /**
+    * @return Collection<int, Coupon>
+    */
+    public function getCoupons(): Collection
+    {
+        return $this->coupons;
+    }
+
+    public function addCoupon(Coupon $coupon): self
+    {
+    if (!$this->coupons->contains($coupon)) {
+        $this->coupons->add($coupon);
+        $coupon->setSeller($this);
+    }
+
+        return $this;
+    }
+
+    public function removeCoupon(Coupon $coupon): self
+   {
+    if ($this->coupons->removeElement($coupon)) {
+        if ($coupon->getSeller() === $this) {
+            $coupon->setSeller(null);
+        }
+    }
+
+        return $this;
+   }
+
     public function getFirstName(): ?string
     {
         return $this->firstName;
@@ -60,25 +92,53 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    #[ORM\ManyToMany(targetEntity: Role::class, inversedBy: 'users')]
+    #[ORM\JoinTable(name: 'user_role')]
+    private Collection $roleEntities;
+
     #[ORM\Column(type: 'json')]
     private array $roles = [];
 
     public function getRoles(): array
     {
         // Garantit que chaque utilisateur a au moins ROLE_USER
-        $roles = $this->roles;
+        $roles = $this->roles ?? [];
         $roles[] = 'ROLE_USER';
+
         return array_unique($roles);
     }
+
     public function setRoles(array $roles): self
     {
         $this->roles = $roles;
         return $this;
     }
 
+
+    public function addRoleEntity(Role $role): self
+    {
+    if (!$this->roleEntities->contains($role)) {
+        $this->roleEntities[] = $role;
+        $role->addUser($this);
+    }
+
+        return $this;
+    }
+
+    public function removeRoleEntity(Role $role): self
+    {
+    if ($this->roleEntities->removeElement($role)) {
+        $role->removeUser($this);
+    }
+
+        return $this;
+    }
+
     public function __construct()
     {
         $this->orders = new ArrayCollection();
+        $this->roleEntities = new ArrayCollection();
+        $this->coupons = new ArrayCollection();
     }
 
     #[ORM\Column(length: 255, nullable: true)]
