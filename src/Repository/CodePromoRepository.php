@@ -21,7 +21,7 @@ class CodePromoRepository extends ServiceEntityRepository
             ->andWhere('c.actif = true')
             ->andWhere('(c.dateDebut IS NULL OR c.dateDebut <= :now)')
             ->andWhere('(c.dateFin IS NULL OR c.dateFin >= :now)')
-            ->setParameter('code', strtoupper($code))
+            ->setParameter('code', strtoupper(trim($code)))
             ->setParameter('now', $now)
             ->getQuery()
             ->getOneOrNullResult();
