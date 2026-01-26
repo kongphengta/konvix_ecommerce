@@ -1,0 +1,45 @@
+<div style="font-family: 'Segoe UI', Arial, sans-serif; background: #f6f8fa; padding: 0; margin: 0;">
+	<table width="100%" cellpadding="0" cellspacing="0" style="background: #f6f8fa; padding: 0; margin: 0;">
+		<tr>
+			<td align="center">
+				<table width="600" cellpadding="0" cellspacing="0" style="background: #fff; border-radius: 12px; box-shadow: 0 2px 12px #0001; margin: 40px 0; padding: 0;">
+					<tr>
+						<td style="background: #0a174e; border-radius: 12px 12px 0 0; padding: 32px 0; text-align: center;">
+							<img src="https://konvix.fr/uploads/product_images/konvixlogo.png" style="width: 170px;" alt="Konvix Ecommerce">
+							<h1 style="color: #fff; font-size: 2em; margin: 0; letter-spacing: 2px;">Offre Spéciale Konvix</h1>
+						</td>
+					</tr>
+					<tr>
+						<td style="padding: 32px 40px 24px 40px; text-align: center;">
+							<p style="font-size: 1.2em; color: #222; margin-bottom: 16px;">Bonjour,</p>
+							<p style="font-size: 1.1em; color: #444; margin-bottom: 24px;">Nous avons le plaisir de vous offrir un avantage exclusif sur notre boutique&nbsp;!</p>
+							<div style="display: inline-block; background: #eaf3ff; border-radius: 8px; padding: 24px 32px; margin: 16px 0;">
+								<span style="font-size: 1.1em; color: #0a174e; font-weight: 600; letter-spacing: 1px;">Votre code promo</span><br>
+								<span style="font-size: 2.2em; font-weight: bold; color: #0a174e; letter-spacing: 2px;">{{ code }}</span>
+							</div>
+							{% if description %}
+								<p style="font-size: 1.1em; color: #333; margin: 18px 0 8px 0;">
+									<strong>{{ description }}</strong>
+								</p>
+							{% endif %}
+							{% if expiration %}
+								<p style="font-size: 1em; color: #888; margin: 0 0 18px 0;">Valable jusqu'au&nbsp;:
+									<strong>{{ expiration }}</strong>
+								</p>
+							{% endif %}
+							<a href="https://konvix.com" style="display: inline-block; margin: 28px 0 0 0; padding: 14px 36px; background: #0a174e; color: #fff; font-size: 1.1em; font-weight: 600; border-radius: 6px; text-decoration: none; letter-spacing: 1px; box-shadow: 0 2px 8px #0a174e40;">J’en profite sur konvix.com</a>
+						</td>
+					</tr>
+					<tr>
+						<td style="background: #f6f8fa; border-radius: 0 0 12px 12px; padding: 24px 40px; text-align: center; color: #888; font-size: 0.95em;">
+							Cet email vous a été envoyé automatiquement, merci de ne pas y répondre.<br>
+							&copy;
+							{{ "now"|date('Y') }}
+							Konvix Ecommerce
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+	</table>
+</div>

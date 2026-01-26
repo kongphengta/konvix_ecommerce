@@ -52,5 +52,6 @@ public function superAdminDashboard(): Response
         yield MenuItem::linkToCrud('Categories', 'fa fa-list', \App\Entity\Category::class);
         yield MenuItem::linkToCrud('Sellers', 'fa fa-user', \App\Entity\Seller::class);
         yield MenuItem::linkToCrud('Reviews', 'fa fa-star', \App\Entity\Review::class);
+        yield MenuItem::linkToCrud('Codes Promo', 'fa fa-ticket', \App\Entity\CodePromo::class);
     }
 }

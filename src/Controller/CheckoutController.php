@@ -12,6 +12,9 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use App\Repository\CodePromoRepository;
+use App\Repository\CodePromoUsageRepository;
+use App\Entity\CodePromoUsage;
 
 class CheckoutController extends AbstractController
 {
@@ -101,7 +104,7 @@ class CheckoutController extends AbstractController
             $session->set('checkout_transporteur', $transporteur);
         }
         return $this->render('checkout/index.html.twig', [
-            'cart' => $cart,
+            'cart' => isset($cart['items']) ? $cart['items'] : $cart,
             'addressDelivery' => $addressDelivery,
             'addressBilling' => $addressBilling,
             'payment_choice' => $payment_choice,
@@ -137,7 +140,7 @@ class CheckoutController extends AbstractController
             $session->set('checkout_transporteur', $transporteur);
         }
         return $this->render('checkout/recap.html.twig', [
-            'cart' => $cart,
+            'cart' => isset($cart['items']) ? $cart['items'] : $cart,
             'address' => $address,
             'transporteur' => $transporteur,
         ]);
@@ -147,7 +150,9 @@ class CheckoutController extends AbstractController
         CartService $cartService,
         Request $request,
         MailerInterface $mailer,
-        \Doctrine\ORM\EntityManagerInterface $entityManager
+        \Doctrine\ORM\EntityManagerInterface $entityManager,
+        CodePromoRepository $codePromoRepository,
+        CodePromoUsageRepository $codePromoUsageRepository
     ): Response {
         $cart = $cartService->getDetailedCart();
         $user = $this->getUser();
@@ -165,10 +170,26 @@ class CheckoutController extends AbstractController
             $session->set('checkout_transporteur', $transporteur);
         }
         // Création et sauvegarde de la commande
+
+        // Vérification et enregistrement de l'utilisation du code promo par client
+        $sessionCode = $session->get('cart_code_promo', '');
+        $codePromoEntity = null;
+        if ($sessionCode) {
+            $codePromoEntity = $codePromoRepository->findValidByCode($sessionCode);
+            if ($codePromoEntity) {
+                // Vérifier si l'utilisateur a déjà utilisé ce code
+                if ($codePromoUsageRepository->hasUserUsedCodePromo($user, $codePromoEntity)) {
+                    $this->addFlash('danger', 'Ce code promo a déjà été utilisé lors d’une précédente commande. Il n’est valable qu’une seule fois par client.');
+                    $session->remove('cart_code_promo');
+                    return $this->redirectToRoute('cart_index');
+                }
+            }
+        }
+
         $order = new \App\Entity\Order();
         $order->setUser($user);
         $order->setCreatedAt(new \DateTimeImmutable());
-        $order->setTotal(array_reduce($cart, function ($sum, $item) {
+        $order->setTotal(array_reduce($cart['items'], function ($sum, $item) {
             return $sum + $item['product']->getPrice() * $item['quantity'];
         }, 0));
         $order->setFraisLivraison($transporteur['price'] ?? 0.0);
@@ -179,9 +200,9 @@ class CheckoutController extends AbstractController
         $entityManager->persist($user);
 
         // Création des OrderItem pour chaque produit du panier
-        foreach ($cart as $item) {
+        foreach ($cart['items'] as $item) {
             $orderItem = new \App\Entity\OrderItem();
-            $orderItem->setOderRef($order);
+            $orderItem->setOrder($order);
             $orderItem->setProduct($item['product']);
             $orderItem->setQuantity($item['quantity']);
             $orderItem->setPrice($item['product']->getPrice());
@@ -190,10 +211,20 @@ class CheckoutController extends AbstractController
         }
 
         $entityManager->flush();
+
+        // Enregistrer l'utilisation du code promo si applicable
+        if ($codePromoEntity) {
+            $usage = new CodePromoUsage();
+            $usage->setUser($user);
+            $usage->setCodePromo($codePromoEntity);
+            $usage->setUsedAt(new \DateTime());
+            $entityManager->persist($usage);
+            $entityManager->flush();
+        }
         // Préparation du contenu HTML de l'email
         $html = $this->renderView('email/order_confirmation.html.twig', [
             'user' => $user,
-            'cart' => $cart,
+            'cart' => isset($cart['items']) ? $cart['items'] : $cart,
             'address' => $address,
             'transporteur' => $transporteur,
             'order' => $order,
@@ -208,7 +239,7 @@ class CheckoutController extends AbstractController
         $cartService->clear();
         $this->addFlash('success', 'Votre paiement a été validé, merci pour votre commande ! Un email de confirmation vous a été envoyé.');
         return $this->render('checkout/success.html.twig', [
-            'cart' => $cart,
+            'cart' => isset($cart['items']) ? $cart['items'] : $cart,
             'user' => $user,
             'order' => $order,
             'address' => $address,
@@ -220,7 +251,7 @@ class CheckoutController extends AbstractController
     public function payStripe(CartService $cartService, Request $request): Response
     {
         $cart = $cartService->getDetailedCart();
-        if (empty($cart)) {
+        if (empty($cart['items'])) {
             $this->addFlash('danger', 'Votre panier est vide, impossible de procéder au paiement.');
             return $this->redirectToRoute('cart_index');
         }
@@ -229,7 +260,7 @@ class CheckoutController extends AbstractController
 
         $lineItems = [];
         $total = 0;
-        foreach ($cart as $item) {
+        foreach ($cart['items'] as $item) {
             $lineItems[] = [
                 'price_data' => [
                     'currency' => 'eur',
@@ -277,9 +308,22 @@ class CheckoutController extends AbstractController
     }
 
     #[Route('/checkout/pay/paypal', name: 'checkout_pay_paypal')]
-    public function payPaypal(CartService $cartService, Request $request): Response
+    public function payPaypal(CartService $cartService, Request $request, CodePromoRepository $codePromoRepository, CodePromoUsageRepository $codePromoUsageRepository, TokenStorageInterface $tokenStorage): Response
     {
         $cart = $cartService->getDetailedCart();
+        $session = $request->getSession();
+        $codePromo = $session->get('cart_code_promo', '');
+        if ($codePromo) {
+            $promo = $codePromoRepository->findValidByCode($codePromo);
+            $user = $tokenStorage->getToken() ? $tokenStorage->getToken()->getUser() : null;
+            if ($promo && $user && is_object($user) && method_exists($user, 'getId')) {
+                if ($codePromoUsageRepository->hasUserUsedCodePromo($user, $promo)) {
+                    $session->remove('cart_code_promo');
+                    $this->addFlash('danger', 'Ce code promo a déjà été utilisé lors d’une précédente commande. Il n’est valable qu’une seule fois par client.');
+                    return $this->redirectToRoute('cart_index');
+                }
+            }
+        }
         $clientId = $_ENV['PAYPAL_CLIENT_ID'] ?? $this->getParameter('PAYPAL_CLIENT_ID');
         $clientSecret = $_ENV['PAYPAL_CLIENT_SECRET'] ?? $this->getParameter('PAYPAL_CLIENT_SECRET');
 
@@ -288,7 +332,7 @@ class CheckoutController extends AbstractController
 
         $items = [];
         $total = 0;
-        foreach ($cart as $item) {
+        foreach ($cart['items'] as $item) {
             $items[] = [
                 'name' => $item['product']->getName(),
                 'unit_amount' => [
@@ -366,7 +410,9 @@ class CheckoutController extends AbstractController
         CartService $cartService,
         EntityManagerInterface $em,
         MailerInterface $mailer,
-        TokenStorageInterface $tokenStorage
+        TokenStorageInterface $tokenStorage,
+        CodePromoRepository $codePromoRepository,
+        CodePromoUsageRepository $codePromoUsageRepository
     ): Response {
 
         // 1. Récupérer et valider la commande (simulation ici)
@@ -389,12 +435,25 @@ class CheckoutController extends AbstractController
         // 2. Créer et sauvegarder la commande (à adapter selon ton entité Order)
         // $order = new Order(); ... $em->persist($order); $em->flush();
 
+        // Enregistrer l'utilisation du code promo si applicable
+        $codePromo = $session->get('cart_code_promo', '');
+        if ($codePromo) {
+            $promoEntity = $codePromoRepository->findValidByCode($codePromo);
+            if ($promoEntity) {
+                $usage = new \App\Entity\CodePromoUsage();
+                $usage->setUser($user);
+                $usage->setCodePromo($promoEntity);
+                $usage->setUsedAt(new \DateTime());
+                $em->persist($usage);
+                $em->flush();
+            }
+            $session->remove('cart_code_promo');
+        }
 
         // 3. Envoyer l’email de confirmation de commande
-
         $html = $this->renderView('email/order_confirmation.html.twig', [
             'user' => $user,
-            'cart' => $cart,
+            'cart' => isset($cart['items']) ? $cart['items'] : $cart,
             'address' => $address,
             'transporteur' => $transporteur,
         ]);
@@ -407,13 +466,15 @@ class CheckoutController extends AbstractController
 
         $mailer->send($email);
 
+        // Vider le panier après paiement validé
+        $cartService->clear();
+
         // 4. Afficher la page de confirmation
         return $this->render('checkout/success_paypal.html.twig', [
-            'cart' => $cart,
+            'cart' => isset($cart['items']) ? $cart['items'] : $cart,
             'user' => $user,
             'address' => $address,
             'transporteur' => $transporteur,
         ]);
     }
 }
-

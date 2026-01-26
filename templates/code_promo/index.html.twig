@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}CodePromo index{% endblock %}
+
+{% block body %}
+    <h1>CodePromo index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Code</th>
+                <th>Description</th>
+                <th>Type</th>
+                <th>Valeur</th>
+                <th>DateDebut</th>
+                <th>DateFin</th>
+                <th>Actif</th>
+                <th>UtilisationMax</th>
+                <th>Utilisations</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for code_promo in code_promos %}
+            <tr>
+                <td>{{ code_promo.id }}</td>
+                <td>{{ code_promo.code }}</td>
+                <td>{{ code_promo.description }}</td>
+                <td>{{ code_promo.type }}</td>
+                <td>{{ code_promo.valeur }}</td>
+                <td>{{ code_promo.dateDebut ? code_promo.dateDebut|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ code_promo.dateFin ? code_promo.dateFin|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ code_promo.actif ? 'Yes' : 'No' }}</td>
+                <td>{{ code_promo.utilisationMax }}</td>
+                <td>{{ code_promo.utilisations }}</td>
+                <td>
+                    <a href="{{ path('app_code_promo_show', {'id': code_promo.id}) }}">show</a>
+                    <a href="{{ path('app_code_promo_edit', {'id': code_promo.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="11">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_code_promo_new') }}">Create new</a>
+{% endblock %}

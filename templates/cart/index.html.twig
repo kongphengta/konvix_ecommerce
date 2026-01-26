@@ -73,9 +73,24 @@
 									<span class="fw-bold text-warning">{{ frais|number_format(2, ',', ' ') }}
 										€</span>
 								</div>
+								{% if codePromo %}
+									<div class="mb-2 text-success">
+										<i class="bi bi-ticket"></i> Code promo appliqué : <span class="fw-bold">{{ codePromo.code }}</span>
+									</div>
+									<div class="mb-2">Réduction :
+										<span class="fw-bold text-danger">-{{ reduction|number_format(2, ',', ' ') }} €</span>
+									</div>
+								{% endif %}
 								<div class="mb-2">Total TTC :
-									<span class="fw-bold text-success">{{ (total + frais)|number_format(2, ',', ' ') }}
+									<span class="fw-bold text-success">{{ (totalAvecPromo + frais)|number_format(2, ',', ' ') }}
 										€</span>
+								</div>
+							</div>
+							<div class="mb-3">
+								<label for="code_promo" class="form-label">Code promo</label>
+								<div class="input-group">
+									<input type="text" class="form-control" id="code_promo" name="code_promo" placeholder="Saisir un code promo" value="{{ codePromo ? codePromo.code : '' }}">
+									<button type="submit" name="apply_code_promo" value="1" class="btn btn-outline-secondary">Appliquer</button>
 								</div>
 							</div>
 							<button type="submit" class="btn btn-success w-100 mt-2">Passer la commande</button>

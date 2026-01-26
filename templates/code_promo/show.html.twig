@@ -1,0 +1,58 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}CodePromo{% endblock %}
+
+{% block body %}
+    <h1>CodePromo</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ code_promo.id }}</td>
+            </tr>
+            <tr>
+                <th>Code</th>
+                <td>{{ code_promo.code }}</td>
+            </tr>
+            <tr>
+                <th>Description</th>
+                <td>{{ code_promo.description }}</td>
+            </tr>
+            <tr>
+                <th>Type</th>
+                <td>{{ code_promo.type }}</td>
+            </tr>
+            <tr>
+                <th>Valeur</th>
+                <td>{{ code_promo.valeur }}</td>
+            </tr>
+            <tr>
+                <th>DateDebut</th>
+                <td>{{ code_promo.dateDebut ? code_promo.dateDebut|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>DateFin</th>
+                <td>{{ code_promo.dateFin ? code_promo.dateFin|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Actif</th>
+                <td>{{ code_promo.actif ? 'Yes' : 'No' }}</td>
+            </tr>
+            <tr>
+                <th>UtilisationMax</th>
+                <td>{{ code_promo.utilisationMax }}</td>
+            </tr>
+            <tr>
+                <th>Utilisations</th>
+                <td>{{ code_promo.utilisations }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_code_promo_index') }}">back to list</a>
+
+    <a href="{{ path('app_code_promo_edit', {'id': code_promo.id}) }}">edit</a>
+
+    {{ include('code_promo/_delete_form.html.twig') }}
+{% endblock %}
