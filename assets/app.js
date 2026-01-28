@@ -11,6 +11,10 @@ import './styles/app.css';
 import './styles/profile.css';
 import $ from 'jquery';
 global.$ = global.jQuery = $;
+
+// Chart.js pour les graphiques statistiques
+import Chart from 'chart.js/auto';
+window.Chart = Chart;
 console.log('Webpack Encore is running!');
 
 $(document).ready(function () {

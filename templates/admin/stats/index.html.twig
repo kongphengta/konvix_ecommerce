@@ -1,0 +1,143 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+	<h2>Chiffre d'affaires par mois</h2>
+	<div class="mb-3 d-flex flex-wrap align-items-center" style="gap:1rem">
+		<span class="badge bg-primary fs-5">Panier moyen : {{ avgCart|number_format(2, ',', ' ') }} €</span>
+		<span class="badge bg-success fs-6">Livrées : {{ deliveredRate }} % ({{ orderStatusStats.delivered }})</span>
+		<span class="badge bg-danger fs-6">Annulées : {{ cancelledRate }} % ({{ orderStatusStats.cancelled }})</span>
+	</div>
+	<form method="get" class="mb-4 d-flex align-items-center flex-wrap" style="gap:1rem">
+		<label for="year" class="form-label mb-0">Filtrer par année :</label>
+		<select name="year" id="year" class="form-select w-auto" onchange="this.form.submit()">
+			<option value="">Toutes</option>
+			{% for y in years %}
+				<option value="{{ y }}" {% if selectedYear == y %} selected {% endif %}>{{ y }}</option>
+			{% endfor %}
+		</select>
+		<label for="dateStart" class="form-label mb-0 ms-3">Ou par plage :</label>
+		<input type="date" name="dateStart" id="dateStart" class="form-control w-auto" value="{{ dateStart|default('') }}">
+		<span>au</span>
+		<input type="date" name="dateEnd" id="dateEnd" class="form-control w-auto" value="{{ dateEnd|default('') }}">
+		<button type="submit" class="btn btn-outline-primary ms-2">Filtrer</button>
+	</form>
+	<div class="mb-4 d-flex justify-content-between align-items-center">
+		<canvas id="caChart" height="80"></canvas>
+		<a href="{{ path('admin_stats_export_csv', {'year': selectedYear}) }}" class="btn btn-outline-success ms-3">
+			<i class="bi bi-file-earmark-spreadsheet"></i> Exporter CSV
+		</a>
+	</div>
+	<table class="table table-striped table-bordered align-middle">
+		<thead class="table-dark">
+			<tr>
+				<th>Mois</th>
+				<th>Année</th>
+				<th>Nombre de commandes</th>
+				<th>Total (€)</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for stat in monthlyStats %}
+				<tr>
+					<td>{{ stat.month }}</td>
+					<td>{{ stat.year }}</td>
+					<td>{{ stat.orders }}</td>
+					<td>{{ stat.total|number_format(2, ',', ' ') }}</td>
+				</tr>
+			{% else %}
+				<tr>
+					<td colspan="4" class="text-center">Aucune donnée</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	<h3 class="mt-5">Top 5 des produits les plus vendus</h3>
+	<table class="table table-bordered table-striped w-auto">
+		<thead class="table-dark">
+			<tr>
+				<th>Produit</th>
+				<th>Quantité vendue</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for prod in topProducts %}
+				<tr>
+					<td>{{ prod.name }}</td>
+					<td>{{ prod.total_quantity }}</td>
+				</tr>
+			{% else %}
+				<tr>
+					<td colspan="2" class="text-center">Aucune donnée</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+	<h3 class="mt-5">Nouveaux clients par mois</h3>
+	<table class="table table-bordered table-striped w-auto">
+		<thead class="table-dark">
+			<tr>
+				<th>Mois</th>
+				<th>Année</th>
+				<th>Nouveaux clients</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for row in newClients %}
+				<tr>
+					<td>{{ row.month }}</td>
+					<td>{{ row.year }}</td>
+					<td>{{ row.total }}</td>
+				</tr>
+			{% else %}
+				<tr>
+					<td colspan="3" class="text-center">Aucune donnée</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+const ctx = document.getElementById('caChart').getContext('2d');
+const labels = [{% for stat in monthlyStats %}'{{ stat.month }}{{ stat.year }}',{% endfor %}];
+const data = [{% for stat in monthlyStats %}{{ stat.total|default(0) }},{% endfor %}];
+new window.Chart(ctx, {
+type: 'bar',
+data: {
+labels: labels,
+datasets: [
+{
+label: "Chiffre d'affaires (€)",
+data: data,
+backgroundColor: 'rgba(54, 162, 235, 0.5)',
+borderColor: 'rgba(54, 162, 235, 1)',
+borderWidth: 1
+}
+]
+},
+options: {
+responsive: true,
+plugins: {
+legend: {
+display: false
+},
+title: {
+display: false
+}
+},
+scales: {
+y: {
+beginAtZero: true,
+ticks: {
+callback: function (value) {
+return value.toLocaleString('fr-FR', {minimumFractionDigits: 2}) + ' €';
+}
+}
+}
+}
+}
+});
+});
+	</script>
+{% endblock %}

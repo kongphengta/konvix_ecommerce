@@ -19,6 +19,21 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+
+    #[ORM\Column(type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'])]
+    private ?\DateTimeImmutable $registeredAt = null;
+
+    public function getRegisteredAt(): ?\DateTimeImmutable
+    {
+        return $this->registeredAt;
+    }
+
+    public function setRegisteredAt(?\DateTimeImmutable $registeredAt): self
+    {
+        $this->registeredAt = $registeredAt;
+        return $this;
+    }
+
     #[ORM\Column(length: 20, nullable: true)]
     private ?string $phone = null;
 

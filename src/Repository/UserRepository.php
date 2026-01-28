@@ -33,6 +33,37 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->flush();
     }
 
+    /**
+     * Retourne le nombre de nouveaux clients par mois et année
+     * @return array [month, year, total]
+     */
+    public function getNewClientsByMonth($year = null, $dateStart = null, $dateEnd = null): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        $params = [];
+        $where = [];
+        if ($dateStart && $dateEnd) {
+            $where[] = 'registered_at BETWEEN :start AND :end';
+            $params['start'] = $dateStart.' 00:00:00';
+            $params['end'] = $dateEnd.' 23:59:59';
+        } elseif ($year) {
+            $where[] = 'YEAR(registered_at) = :year';
+            $params['year'] = $year;
+        }
+        $sql = 'SELECT MONTH(registered_at) AS month, YEAR(registered_at) AS year, COUNT(id) AS total
+            FROM user';
+        if ($where) {
+            $sql .= ' WHERE ' . implode(' AND ', $where);
+        }
+        $sql .= ' GROUP BY year, month ORDER BY year DESC, month DESC';
+        $mois = [1 => 'Janvier', 2 => 'Février', 3 => 'Mars', 4 => 'Avril', 5 => 'Mai', 6 => 'Juin', 7 => 'Juillet', 8 => 'Août', 9 => 'Septembre', 10 => 'Octobre', 11 => 'Novembre', 12 => 'Décembre'];
+        $results = $conn->executeQuery($sql, $params)->fetchAllAssociative();
+        foreach ($results as &$row) {
+            $row['month'] = $mois[(int)$row['month']] ?? $row['month'];
+        }
+        return $results;
+    }
+
     //    /**
     //     * @return User[] Returns an array of User objects
     //     */
