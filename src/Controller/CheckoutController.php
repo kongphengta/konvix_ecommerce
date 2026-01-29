@@ -439,9 +439,6 @@ class CheckoutController extends AbstractController
             $session->set('checkout_transporteur', $transporteur);
         }
 
-        // 2. Créer et sauvegarder la commande (à adapter selon ton entité Order)
-        // $order = new Order(); ... $em->persist($order); $em->flush();
-
         // Enregistrer l'utilisation du code promo si applicable
         $codePromo = $session->get('cart_code_promo', '');
         if ($codePromo) {
@@ -458,7 +455,6 @@ class CheckoutController extends AbstractController
         }
 
         // ...avant l'envoi de l'email de confirmation dans successPaypal()...
-
         $order = new \App\Entity\Order();
         $order->setUser($user);
         $order->setCreatedAt(new \DateTimeImmutable());
