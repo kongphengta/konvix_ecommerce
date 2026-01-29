@@ -439,8 +439,6 @@ class CheckoutController extends AbstractController
             $transporteur = $selected && isset($transporteurs[$selected]) ? $transporteurs[$selected] : ['name' => 'Non renseigné', 'price' => 0.00];
             $session->set('checkout_transporteur', $transporteur);
         }
-        // $order = new Order(); ... $em->persist($order); $em->flush();
-
         // Enregistrer l'utilisation du code promo si applicable
         $codePromo = $session->get('cart_code_promo', '');
         if ($codePromo) {
