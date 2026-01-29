@@ -8,6 +8,7 @@
 /var/
 /vendor/
 public/uploads/
+DEPOT2_Fonctionnalites.md
 ###< symfony/framework-bundle ###
 
 ###> symfony/webpack-encore-bundle ###

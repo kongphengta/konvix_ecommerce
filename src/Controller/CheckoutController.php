@@ -208,6 +208,13 @@ class CheckoutController extends AbstractController
             $orderItem->setPrice($item['product']->getPrice());
             $entityManager->persist($orderItem);
             $order->addOrderItem($orderItem);
+
+            // Recharge le produit depuis Doctrine pour garantir la persistance
+            $product = $entityManager->getRepository(\App\Entity\Product::class)->find($item['product']->getId());
+            if ($product) {
+                $product->setStock($product->getStock() - $item['quantity']);
+                $entityManager->persist($product);
+            }
         }
 
         $entityManager->flush();
@@ -449,6 +456,41 @@ class CheckoutController extends AbstractController
             }
             $session->remove('cart_code_promo');
         }
+
+        // ...avant l'envoi de l'email de confirmation dans successPaypal()...
+
+        $order = new \App\Entity\Order();
+        $order->setUser($user);
+        $order->setCreatedAt(new \DateTimeImmutable());
+        $order->setTotal(array_reduce($cart['items'], function ($sum, $item) {
+            return $sum + $item['product']->getPrice() * $item['quantity'];
+        }, 0));
+        $order->setFraisLivraison($transporteur['price'] ?? 0.0);
+        $order->setTransporteur($transporteur['name'] ?? 'Non renseigné');
+        $order->setStatus('payé');
+        $user->addOrder($order);
+        $em->persist($order);
+        $em->persist($user);
+
+        // Création des OrderItem pour chaque produit du panier
+        foreach ($cart['items'] as $item) {
+            $orderItem = new \App\Entity\OrderItem();
+            $orderItem->setOrder($order);
+            $orderItem->setProduct($item['product']);
+            $orderItem->setQuantity($item['quantity']);
+            $orderItem->setPrice($item['product']->getPrice());
+            $em->persist($orderItem);
+            $order->addOrderItem($orderItem);
+
+            // Recharge le produit depuis Doctrine pour garantir la persistance
+            $product = $em->getRepository(\App\Entity\Product::class)->find($item['product']->getId());
+            if ($product) {
+                $product->setStock($product->getStock() - $item['quantity']);
+                $em->persist($product);
+            }
+        }
+
+        $em->flush();
 
         // 3. Envoyer l’email de confirmation de commande
         $html = $this->renderView('email/order_confirmation.html.twig', [

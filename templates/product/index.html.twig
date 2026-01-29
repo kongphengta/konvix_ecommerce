@@ -7,9 +7,9 @@
 	{% include '_partials/_hero.html.twig' %}
 	{% include '_partials/_breadcrumb.html.twig' %}
 	<h1 class="mb-4">Nos produits</h1>
-	<div class="row g-4">
+	<div class="row">
 		{% for product in products %}
-			<div class="col-12 col-sm-6 col-md-4 col-lg-3">
+			<div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
 				<div class="card h-100 shadow-sm">
 					<a href="{{ path('app_product_show', {id: product.id}) }}">
 						<img src="/uploads/product_images/{{ product.ImageFolder }}/{{ product.mainImage }}" class="card-img-top bg-white" alt="{{ product.name }}" style="height: 180px; width: 100%; object-fit: contain; display: block; margin: auto;">
