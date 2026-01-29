@@ -433,12 +433,12 @@ class CheckoutController extends AbstractController
             'mondial' => ['name' => 'Mondial Relay', 'price' => 4.50],
             'chrono' => ['name' => 'Chronopost', 'price' => 12.00],
         ];
+
         $transporteur = $session->get('checkout_transporteur');
         if (!$transporteur || !isset($transporteur['name'])) {
             $transporteur = $selected && isset($transporteurs[$selected]) ? $transporteurs[$selected] : ['name' => 'Non renseigné', 'price' => 0.00];
             $session->set('checkout_transporteur', $transporteur);
         }
-
         // Enregistrer l'utilisation du code promo si applicable
         $codePromo = $session->get('cart_code_promo', '');
         if ($codePromo) {
@@ -454,6 +454,7 @@ class CheckoutController extends AbstractController
             $session->remove('cart_code_promo');
         }
 
+       
         // ...avant l'envoi de l'email de confirmation dans successPaypal()...
         $order = new \App\Entity\Order();
         $order->setUser($user);
