@@ -27,14 +27,35 @@ final class ProductController extends AbstractController
     #[Route('/', name: 'app_home')]
     public function index(EntityManagerInterface $em, \Symfony\Component\HttpFoundation\Request $request, \Knp\Component\Pager\PaginatorInterface $paginator): Response
     {
-        $query = $em->getRepository(Product::class)->findValidatedProductsQueryBuilder()->getQuery();
-        $pagination = $paginator->paginate(
-            $query,
-            $request->query->getInt('page', 1),
-            12
-        );
+        $products = $em->getRepository(Product::class)->findValidatedProductsQueryBuilder();
+        // Pagination manuelle PHP
+        $page = $request->query->getInt('page', 1);
+        $limit = 12;
+        $total = count($products);
+        $offset = ($page - 1) * $limit;
+        $productsPage = array_slice($products, $offset, $limit);
+
+        // Charger les noms de catégorie et vendeur pour chaque produit
+        $categoryRepo = $em->getRepository(\App\Entity\Category::class);
+        $sellerRepo = $em->getRepository(\App\Entity\Seller::class);
+        foreach ($productsPage as &$product) {
+            $category = $categoryRepo->find($product['category_id']);
+            $seller = $sellerRepo->find($product['seller_id']);
+            $product['category_name'] = $category ? $category->getName() : '';
+            $product['seller_name'] = $seller ? $seller->getName() : '';
+        }
+        unset($product);
+
+        $pagination = [
+            'products' => $productsPage,
+            'page' => $page,
+            'limit' => $limit,
+            'total' => $total,
+            'pages' => ceil($total / $limit),
+        ];
         return $this->render('product/index.html.twig', [
-            'products' => $pagination,
+            'products' => $pagination['products'],
+            'pagination' => $pagination,
         ]);
     }
 

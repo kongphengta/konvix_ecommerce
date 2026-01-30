@@ -16,37 +16,14 @@ class ProductRepository extends ServiceEntityRepository
      */
     public function findValidatedProductsQueryBuilder()
     {
-        return $this->createQueryBuilder('p')
-            ->andWhere('p.isValidated = :val')
-            ->setParameter('val', true);
+        $conn = $this->getEntityManager()->getConnection();
+        $sql = 'SELECT * FROM product WHERE is_validated = 1 ORDER BY RAND()';
+        $stmt = $conn->prepare($sql);
+        $result = $stmt->executeQuery();
+        return $result->fetchAllAssociative();
     }
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Product::class);
     }
-
-    //    /**
-    //     * @return Product[] Returns an array of Product objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('p.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-    //    public function findOneBySomeField($value): ?Product
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
 }
