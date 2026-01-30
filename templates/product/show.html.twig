@@ -1,236 +1,263 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-    {% include '_partials/_hero.html.twig' %}
-    {% include '_partials/_breadcrumb.html.twig' %}
+	{% include '_partials/_hero.html.twig' %}
+	{% include '_partials/_breadcrumb.html.twig' %}
 
-    <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center bg-white" style="padding: 1.2rem 2rem 0.5rem 2rem;">
-            <span class="fw-bold fs-4">Présentation du produit</span>
-            <div class="d-flex align-items-center gap-2">
-                <span class="fw-bold">Avis client</span>
-                <span class="ms-2">
-                    {% set total = product.reviews|length %}
-                    {% if total > 0 %}
-                        {% set avg = (product.reviews|map(r => r.rating)|reduce((a, b) => a + b) / total) %}
-                        {% for i in 1..5 %}
-                            {% if i <= avg %}
-                                <i class="bi bi-star-fill text-warning"></i>
-                            {% else %}
-                                <i class="bi bi-star text-warning"></i>
-                            {% endif %}
-                        {% endfor %}
-                        <span class="text-dark ms-1">{{ avg|number_format(1) }}/5</span>
-                        <span class="text-muted ms-1">({{ total }} avis)</span>
-                    {% else %}
-                        {% for i in 1..5 %}
-                            <i class="bi bi-star text-warning"></i>
-                        {% endfor %}
-                        <span class="text-muted ms-1">Pas encore d'avis</span>
-                    {% endif %}
-                </span>
-            </div>
-        </div>
-        <div class="card-body">
-            <div class="row g-4">
-                <!-- Colonne gauche : images -->
-                <div class="col-lg-5 col-md-5 col-12 mb-3">
-                    <img src="/uploads/product_images/{{ product.ImageFolder }}/{{ product.mainImage }}" alt="image principale du produit" id="mainProductImage" class="img-fluid rounded shadow-sm mb-3 bg-white" style="height: 260px; width: 100%; object-fit: contain; display: block; margin: auto; cursor:pointer;" onerror="this.onerror=null;this.src='/konvix_ecommerce/images/placeholder.png';">
-                    {% set mainImg = '/uploads/product_images/' ~ product.ImageFolder ~ '/' ~ product.mainImage %}
-                    {% if thumbnails is defined and thumbnails|length > 0 %}
-                        <div class="row row-cols-auto g-2 justify-content-center mt-2">
-                            {% set displayed = 0 %}
-                            {% for img in thumbnails %}
-                                {% if '/placeholder.png' not in img %}
-                                    <div class="col">
-                                        <img src="{{ img }}" alt="Miniature produit" class="img-thumbnail thumb-img {% if loop.first %}border-primary{% endif %}" style="width:70px; height:70px; object-fit:cover; cursor:pointer; border:2px solid {% if loop.first %}#0072ff{% else %}#eee{% endif %}; transition:box-shadow 0.2s, border-color 0.2s;" data-img="{{ asset(img) }}">
-                                    </div>
-                                    {% set displayed = displayed + 1 %}
-                                {% endif %}
-                            {% endfor %}
-                            {% if displayed == 0 %}
-                                <div class="col">
-                                    <img src="/konvix_ecommerce/images/placeholder.png" alt="Miniature placeholder" class="img-thumbnail thumb-img border-primary" style="width:70px; height:70px; object-fit:cover; cursor:pointer; border:2px solid #0072ff;">
-                                </div>
-                            {% endif %}
-                        </div>
-                    {% else %}
-                        <div class="d-flex gap-2 justify-content-center mt-2 flex-wrap">
-                            <img src="{{ mainImg }}" alt="Miniature principale" class="img-thumbnail thumb-img" style="width:70px; height:70px; object-fit:cover; cursor:pointer; border:2px solid #0072ff; transition:box-shadow 0.2s, border-color 0.2s;" data-img="{{ asset(mainImg) }}">
-                        </div>
-                    {% endif %}
-                </div>
-                <!-- Colonne centrale : infos produit -->
-                <div class="col-lg-4 col-md-7 col-12 mb-3" style="padding-left:50px;">
-                    <h1 class="fw-bold">{{ product.name }}</h1>
-                    <p class="fs-2 fw-bold text-danger">{{ product.price|number_format(2, '.', ' ') }} €</p>
-                    <p><span class="text-muted">Catégorie :</span> {{ product.category.name }}</p>
-                    <p><span class="text-muted fw-semibold"><i>Vendu et expédié par :</i></span> {{ product.seller.name }}</p>
-                    <div class="d-flex gap-4 my-3 flex-wrap">
-                        <span class="fw-bold text-secondary">Référence du produit : {{ product.id }}</span>
-                    </div>
-                    <span class="text-secondary mb-2 d-block"><i class="bi bi-heart"></i> Favoris</span>
-                    <hr class="my-3">
-                    <div class="d-flex align-items-center gap-3 mb-3">
-                        {% if app.user and not alreadyReviewed %}
-                            <a href="#review-form" class="btn btn-primary fw-semibold">
-                                <i class="bi bi-pencil-square me-2"></i>Donner mon avis
-                            </a>
-                        {% endif %}
-                        <span style="color: #0072ff; font-size: 1.08em; font-weight: 500; letter-spacing: 0.01em;">Votre avis aide les autres clients<br>et améliore nos produits !</span>
-                    </div>
-                    {% if app.user and not alreadyReviewed %}
-                        <div id="review-form" class="mb-4">
-                            <div class="card shadow-sm border-0 mb-3" style="max-width: 480px;">
-                                <div class="card-header bg-light border-bottom-0 pb-2">
-                                    <span class="fw-bold fs-5"><i class="bi bi-chat-left-text me-2"></i>Laisser un avis sur ce produit</span>
-                                </div>
-                                <div class="card-body pt-3">
-                                    {{ form_start(reviewForm) }}
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Note</label>
-                                        <div class="d-flex gap-2 align-items-center" id="star-rating-review">
-                                            {% for idx, choice in reviewForm.rating %}
-                                                <input type="radio" id="star{{ idx }}" name="{{ choice.vars.full_name }}" value="{{ choice.vars.value }}" {% if choice.vars.checked %} checked {% endif %} style="display:none;">
-                                                <label for="star{{ idx }}" style="cursor:pointer; font-size:2em; color:#ffc107; margin-bottom:0;">
-                                                    <i class="bi bi-star{% if choice.vars.checked %}-fill{% endif %}"></i>
-                                                </label>
-                                            {% endfor %}
-                                            {{ form_widget(reviewForm.rating, {'attr': {'class': 'd-none', 'style': 'display:none;'}}) }}
-                                            {{ form_errors(reviewForm.rating) }}
-                                        </div>
-                                    </div>
-                                    <script>
-                                        document.addEventListener('DOMContentLoaded', function () {
-                                            const stars = document.querySelectorAll('#star-rating-review label i');
-                                            const radios = document.querySelectorAll('#star-rating-review input[type="radio"]');
-                                            radios.forEach((radio, idx) => {
-                                                radio.addEventListener('change', function () {
-                                                    stars.forEach((star, sidx) => {
-                                                        if (sidx <= idx) {
-                                                            star.classList.add('bi-star-fill');
-                                                            star.classList.remove('bi-star');
-                                                        } else {
-                                                            star.classList.remove('bi-star-fill');
-                                                            star.classList.add('bi-star');
-                                                        }
-                                                    });
-                                                });
-                                            });
-                                        });
-                                    </script>
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Votre avis</label>
-                                        {{ form_widget(reviewForm.comment, {'attr': {'class': 'form-control', 'rows': 4, 'placeholder': 'Partagez votre expérience avec ce produit...'}}) }}
-                                        {{ form_errors(reviewForm.comment) }}
-                                    </div>
-                                    <div class="d-flex justify-content-end">
-                                        <button type="submit" class="btn btn-success px-4">
-                                            <i class="bi bi-send me-1"></i>Envoyer mon avis
-                                        </button>
-                                    </div>
-                                    {{ form_rest(reviewForm) }}
-                                    {{ form_end(reviewForm) }}
-                                </div>
-                            </div>
-                        </div>
-                    {% elseif alreadyReviewed %}
-                        <div class="alert alert-info">Vous avez déjà laissé un avis pour ce produit.</div>
-                    {% endif %}
-                </div>
-                <!-- Colonne droite : stock/panier -->
-                <div class="col-lg-3 col-md-12 col-12 mb-3">
-                    <div class="bg-success bg-opacity-10 border-start border-success border-4 rounded-2 p-2 mb-3" style="max-width: 280px;">
-                        <span class="fw-bold text-success">En stock :</span><br>
-                        <span class="text-success"><i class="bi bi-check-circle"></i> {{ product.stock ??  0 }} unité(s) disponible(s)</span>
-                    </div>
-                    <form method="get" action="{{ path('cart_add', {'id': product.id}) }}" class="mb-3">
-                        <div class="mb-3">
-                            <label for="quantity" class="form-label fw-semibold">Quantité</label>
-                            <input type="number" id="quantity" name="quantity" value="1" min="1" max="{{ product.stock ?? 1 }}" class="form-control" style="max-width: 150px;">
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100 btn-lg mb-2">
-                            <i class="bi bi-cart-plus"></i> Ajouter au panier
-                        </button>
-                    </form>
-                    <div class="card bg-light border-0 mb-2">
-                        <div class="card-body text-center p-2">
-                            <p class="mb-2 fw-bold fs-6"><i class="bi bi-shield-check text-success"></i> Paiement sécurisé</p>
-                            <div class="d-flex justify-content-center align-items-center gap-2">
-                                <img src="{{ asset('images/stripe-logo.png') }}" alt="Stripe" style="height: 30px;" onerror="this.style.display='none'; this.nextElementSibling. style.display='inline';">
-                                <span class="badge bg-primary" style="display: none;">Stripe</span>
-                                <img src="{{ asset('images/paypal-logo.png') }}" alt="PayPal" style="height: 30px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
-                                <span class="badge bg-info" style="display:none;">PayPal</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+	<div class="card mb-4">
+		<div class="card-header d-flex justify-content-between align-items-center bg-white" style="padding: 1.2rem 2rem 0.5rem 2rem;">
+			<span class="fw-bold fs-4">Présentation du produit</span>
+			<div class="d-flex align-items-center gap-2">
+				<span class="fw-bold">Avis client</span>
+				<span class="ms-2">
+					{% set total = product.reviews|length %}
+					{% if total > 0 %}
+						{% set avg = (product.reviews|map(r => r.rating)|reduce((a, b) => a + b) / total) %}
+						{% for i in 1..5 %}
+							{% if i <= avg %}
+								<i class="bi bi-star-fill text-warning"></i>
+							{% else %}
+								<i class="bi bi-star text-warning"></i>
+							{% endif %}
+						{% endfor %}
+						<span class="text-dark ms-1">{{ avg|number_format(1) }}/5</span>
+						<span class="text-muted ms-1">({{ total }}
+							avis)</span>
+					{% else %}
+						{% for i in 1..5 %}
+							<i class="bi bi-star text-warning"></i>
+						{% endfor %}
+						<span class="text-muted ms-1">Pas encore d'avis</span>
+					{% endif %}
+				</span>
+			</div>
+		</div>
+		<div class="card-body">
+			<div
+				class="row g-4">
+				<!-- Colonne gauche : images -->
+				<div class="col-lg-5 col-md-5 col-12 mb-3">
+					<img src="/uploads/product_images/{{ product.ImageFolder }}/{{ product.mainImage }}" alt="image principale du produit" id="mainProductImage" class="img-fluid rounded shadow-sm mb-3 bg-white" style="height: 260px; width: 100%; object-fit: contain; display: block; margin: auto; cursor:pointer;" onerror="this.onerror=null;this.src='/konvix_ecommerce/images/placeholder.png';">
+					{% set mainImg = '/uploads/product_images/' ~ product.ImageFolder ~ '/' ~ product.mainImage %}
+					{% if thumbnails is defined and thumbnails|length > 0 %}
+						<div class="row row-cols-auto g-2 justify-content-center mt-2">
+							{% set displayed = 0 %}
+							{% for img in thumbnails %}
+								{% if '/placeholder.png' not in img %}
+									<div class="col">
+										<img src="{{ img }}" alt="Miniature produit" class="img-thumbnail thumb-img {% if loop.first %}border-primary{% endif %}" style="width:70px; height:70px; object-fit:cover; cursor:pointer; border:2px solid {% if loop.first %}#0072ff{% else %}#eee{% endif %}; transition:box-shadow 0.2s, border-color 0.2s;" data-img="{{ asset(img) }}">
+									</div>
+									{% set displayed = displayed + 1 %}
+								{% endif %}
+							{% endfor %}
+							{% if displayed == 0 %}
+								<div class="col">
+									<img src="/konvix_ecommerce/images/placeholder.png" alt="Miniature placeholder" class="img-thumbnail thumb-img border-primary" style="width:70px; height:70px; object-fit:cover; cursor:pointer; border:2px solid #0072ff;">
+								</div>
+							{% endif %}
+						</div>
+					{% else %}
+						<div class="d-flex gap-2 justify-content-center mt-2 flex-wrap">
+							<img src="{{ mainImg }}" alt="Miniature principale" class="img-thumbnail thumb-img" style="width:70px; height:70px; object-fit:cover; cursor:pointer; border:2px solid #0072ff; transition:box-shadow 0.2s, border-color 0.2s;" data-img="{{ asset(mainImg) }}">
+						</div>
+					{% endif %}
+				</div>
+				<!-- Colonne centrale : infos produit -->
+				<div class="col-lg-4 col-md-7 col-12 mb-3" style="padding-left:50px;">
+					<h1 class="fw-bold">{{ product.name }}</h1>
+					<p class="fs-2 fw-bold text-danger">{{ product.price|number_format(2, '.', ' ') }}
+						€</p>
+					<p>
+						<span class="text-muted">Catégorie :</span>
+						{{ product.category.name }}</p>
+					<p>
+						<span class="text-muted fw-semibold">
+							<i>Vendu et expédié par :</i>
+						</span>
+						{{ product.seller.name }}</p>
+					<div class="d-flex gap-4 my-3 flex-wrap">
+						<span class="fw-bold text-secondary">Référence du produit :
+							{{ product.id }}</span>
+					</div>
+					<span class="text-secondary mb-2 d-block">
+						<i class="bi bi-heart"></i>
+						Favoris</span>
+					<hr class="my-3">
+					<div class="d-flex align-items-center gap-3 mb-3">
+						{% if app.user and not alreadyReviewed %}
+							<a href="#review-form" class="btn btn-primary fw-semibold">
+								<i class="bi bi-pencil-square me-2"></i>Donner mon avis
+							</a>
+						{% endif %}
+						<span style="color: #0072ff; font-size: 1.08em; font-weight: 500; letter-spacing: 0.01em;">Votre avis aide les autres clients<br>et améliore nos produits !</span>
+					</div>
+					{% if app.user and not alreadyReviewed %}
+						<div id="review-form" class="mb-4">
+							<div class="card shadow-sm border-0 mb-3" style="max-width: 480px;">
+								<div class="card-header bg-light border-bottom-0 pb-2">
+									<span class="fw-bold fs-5">
+										<i class="bi bi-chat-left-text me-2"></i>Laisser un avis sur ce produit</span>
+								</div>
+								<div class="card-body pt-3">
+									{{ form_start(reviewForm) }}
+									<div class="mb-3">
+										<label class="form-label fw-semibold">Note</label>
+										<div class="d-flex gap-2 align-items-center" id="star-rating-review">
+											{% for idx, choice in reviewForm.rating %}
+												<input type="radio" id="star{{ idx }}" name="{{ choice.vars.full_name }}" value="{{ choice.vars.value }}" {% if choice.vars.checked %} checked {% endif %} style="display:none;">
+												<label for="star{{ idx }}" style="cursor:pointer; font-size:2em; color:#ffc107; margin-bottom:0;">
+													<i class="bi bi-star{% if choice.vars.checked %}-fill{% endif %}"></i>
+												</label>
+											{% endfor %}
+											{{ form_widget(reviewForm.rating, {'attr': {'class': 'd-none', 'style': 'display:none;'}}) }}
+											{{ form_errors(reviewForm.rating) }}
+										</div>
+									</div>
+									<script>
+										document.addEventListener('DOMContentLoaded', function () {
+const stars = document.querySelectorAll('#star-rating-review label i');
+const radios = document.querySelectorAll('#star-rating-review input[type="radio"]');
+radios.forEach((radio, idx) => {
+radio.addEventListener('change', function () {
+stars.forEach((star, sidx) => {
+if (sidx <= idx) {
+star.classList.add('bi-star-fill');
+star.classList.remove('bi-star');
+} else {
+star.classList.remove('bi-star-fill');
+star.classList.add('bi-star');
+}
+});
+});
+});
+});
+									</script>
+									<div class="mb-3">
+										<label class="form-label fw-semibold">Votre avis</label>
+										{{ form_widget(reviewForm.comment, {'attr': {'class': 'form-control', 'rows': 4, 'placeholder': 'Partagez votre expérience avec ce produit...'}}) }}
+										{{ form_errors(reviewForm.comment) }}
+									</div>
+									<div class="d-flex justify-content-end">
+										<button type="submit" class="btn btn-success px-4">
+											<i class="bi bi-send me-1"></i>Envoyer mon avis
+										</button>
+									</div>
+									{{ form_rest(reviewForm) }}
+									{{ form_end(reviewForm) }}
+								</div>
+							</div>
+						</div>
+					{% elseif alreadyReviewed %}
+						<div class="alert alert-info">Vous avez déjà laissé un avis pour ce produit.</div>
+					{% endif %}
+				</div>
+				<!-- Colonne droite : stock/panier -->
+				<div class="col-lg-3 col-md-12 col-12 mb-3">
+					<div class="bg-success bg-opacity-10 border-start border-success border-4 rounded-2 p-2 mb-3" style="max-width: 280px;">
+						<span class="fw-bold text-success">En stock :</span><br>
+						<span class="text-success">
+							<i class="bi bi-check-circle"></i>
+							{{ product.stock ??  0 }}
+							unité(s) disponible(s)</span>
+					</div>
+					<form method="get" action="{{ path('cart_add', {'id': product.id}) }}" class="mb-3">
+						<div class="mb-3">
+							<label for="quantity" class="form-label fw-semibold">Quantité</label>
+							<input type="number" id="quantity" name="quantity" value="1" min="1" max="{{ product.stock ?? 1 }}" class="form-control" style="max-width: 150px;">
+						</div>
+						<button type="submit" class="btn btn-primary w-100 btn-lg mb-2">
+							<i class="bi bi-cart-plus"></i>
+							Ajouter au panier
+						</button>
+					</form>
+					<div class="card bg-light border-0 mb-2">
+						<div class="card-body text-center p-2">
+							<p class="mb-2 fw-bold fs-6">
+								<i class="bi bi-shield-check text-success"></i>
+								Paiement sécurisé</p>
+							<div class="d-flex justify-content-center align-items-center gap-2">
+								<img src="{{ asset('images/stripe-logo.png') }}" alt="Stripe" style="height: 30px;" onerror="this.style.display='none'; this.nextElementSibling. style.display='inline';">
+								<span class="badge bg-primary" style="display: none;">Stripe</span>
+								<img src="{{ asset('images/paypal-logo.png') }}" alt="PayPal" style="height: 30px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+								<span class="badge bg-info" style="display:none;">PayPal</span>
+							</div>
+						</div>
+					</div>
+					<div class="card bg-light border-0 mb-2"></div>
+				</div>
+			</div>
+		</div>
+	</div>
 
-    <!-- ========== SECTION DESCRIPTION DU PRODUIT ========== -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Description du produit</h5>
-                </div>
-                <div class="card-body">
-                    {{ product.description|raw }}
-                </div>
-            </div>
-            {% if is_granted('ROLE_SELLER') and product.seller == app.user %}
-                <form method="post" action="{{ path('seller_product_delete', {'id': product.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce produit ?');" class="mt-3">
-                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ product.id) }}">
-                    <button class="btn btn-danger mt-3" type="submit"><i class="bi bi-trash"></i> Supprimer ce produit</button>
-                </form>
-            {% endif %}
-        </div>
-    </div>
+	<!-- ========== SECTION DESCRIPTION DU PRODUIT ========== -->
+	<div class="row mt-4">
+		<div class="col-12">
+			<div class="card shadow-sm">
+				<div class="card-header bg-light">
+					<h5 class="mb-0">
+						<i class="bi bi-info-circle"></i>
+						Description du produit</h5>
+				</div>
+				<div class="card-body">
+					{{ product.description|raw }}
+				</div>
+			</div>
+			{% if is_granted('ROLE_SELLER') and product.seller == app.user %}
+				<form method="post" action="{{ path('seller_product_delete', {'id': product.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce produit ?');" class="mt-3">
+					<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ product.id) }}">
+					<button class="btn btn-danger mt-3" type="submit">
+						<i class="bi bi-trash"></i>
+						Supprimer ce produit</button>
+				</form>
+			{% endif %}
+		</div>
+	</div>
 
-    <!-- ========== SECTION AVIS CLIENTS EN PLEINE LARGEUR ========== -->
-    <div class="row mt-5">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0"><i class="bi bi-chat-left-text"></i> Avis clients
-                        {% if product.reviews|length > 0 %}
-                            <span class="badge bg-light text-dark">{{ product.reviews|length }}</span>
-                        {% endif %}
-                    </h4>
-                </div>
-                <div class="card-body p-4">
-                    {% if product.reviews|length > 0 %}
-                        {% for review in product.reviews %}
-                            <div class="review-item border rounded-3 p-3 mb-3 bg-light">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <div>
-                                        <strong class="text-dark">{{ review.user.firstName }} {{ review.user.lastName|first }}.</strong>
-                                        <div class="star-rating mt-1">
-                                            {% for i in 1..5 %}
-                                                {% if i <= review.rating %}
-                                                    <i class="bi bi-star-fill text-warning"></i>
-                                                {% else %}
-                                                    <i class="bi bi-star text-muted"></i>
-                                                {% endif %}
-                                            {% endfor %}
-                                            <span class="ms-2 text-muted fw-bold">{{ review.rating }}/5</span>
-                                        </div>
-                                    </div>
-                                    <small class="text-muted">{{ review.createdAt|date('d/m/Y') }}</small>
-                                </div>
-                                <p class="mb-0 text-secondary">{{ review.comment }}</p>
-                            </div>
-                        {% endfor %}
-                    {% else %}
-                        <div class="alert alert-info">
-                            <i class="bi bi-info-circle"></i>
-                            Aucun avis pour le moment.  Soyez le premier à donner votre avis !
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
+	<!-- ========== SECTION AVIS CLIENTS EN PLEINE LARGEUR ========== -->
+	<div class="row mt-5">
+		<div class="col-12">
+			<div class="card shadow-sm">
+				<div class="card-header bg-primary text-white">
+					<h4 class="mb-0">
+						<i class="bi bi-chat-left-text"></i>
+						Avis clients
+						{% if product.reviews|length > 0 %}
+							<span class="badge bg-light text-dark">{{ product.reviews|length }}</span>
+						{% endif %}
+					</h4>
+				</div>
+				<div class="card-body p-4">
+					{% if product.reviews|length > 0 %}
+						{% for review in product.reviews %}
+							<div class="review-item border rounded-3 p-3 mb-3 bg-light">
+								<div class="d-flex justify-content-between align-items-start mb-2">
+									<div>
+										<strong class="text-dark">{{ review.user.firstName }}
+											{{ review.user.lastName|first }}.</strong>
+										<div class="star-rating mt-1">
+											{% for i in 1..5 %}
+												{% if i <= review.rating %}
+													<i class="bi bi-star-fill text-warning"></i>
+												{% else %}
+													<i class="bi bi-star text-muted"></i>
+												{% endif %}
+											{% endfor %}
+											<span class="ms-2 text-muted fw-bold">{{ review.rating }}/5</span>
+										</div>
+									</div>
+									<small class="text-muted">{{ review.createdAt|date('d/m/Y') }}</small>
+								</div>
+								<p class="mb-0 text-secondary">{{ review.comment }}</p>
+							</div>
+						{% endfor %}
+					{% else %}
+						<div class="alert alert-info">
+							<i class="bi bi-info-circle"></i>
+							Aucun avis pour le moment.  Soyez le premier à donner votre avis !
+						</div>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+	</div>
 {% endblock %}

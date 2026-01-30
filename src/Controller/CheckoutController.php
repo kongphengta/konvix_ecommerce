@@ -104,7 +104,7 @@ class CheckoutController extends AbstractController
             $session->set('checkout_transporteur', $transporteur);
         }
         return $this->render('checkout/index.html.twig', [
-            'cart' => isset($cart['items']) ? $cart['items'] : $cart,
+            'cart' => $cart,
             'addressDelivery' => $addressDelivery,
             'addressBilling' => $addressBilling,
             'payment_choice' => $payment_choice,
@@ -140,7 +140,7 @@ class CheckoutController extends AbstractController
             $session->set('checkout_transporteur', $transporteur);
         }
         return $this->render('checkout/recap.html.twig', [
-            'cart' => isset($cart['items']) ? $cart['items'] : $cart,
+            'cart' => $cart,
             'address' => $address,
             'transporteur' => $transporteur,
         ]);

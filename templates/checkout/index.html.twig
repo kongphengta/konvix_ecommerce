@@ -21,7 +21,7 @@
 						</thead>
 						<tbody>
 							{% set total = 0 %}
-							{% for item in cart %}
+							{% for item in cart.items %}
 								<tr>
 									<td>{{ item.product.name }}</td>
 									<td>{{ item.product.price|number_format(2, ',', ' ') }}
@@ -48,24 +48,28 @@
 						<div class="row mb-1" style="color:#6c757d; font-size:1.08em;">
 							<div class="col-7">Frais de livraison :</div>
 							<div class="col-5 text-end">
-								{{ order is defined and order.fraisLivraison is defined ? order.fraisLivraison|number_format(2, ',', ' ') : (transporteur.price|default(0)|number_format(2, ',', ' ')) }}
-								€
+								{{ transporteur.price|default(0)|number_format(2, ',', ' ') }} €
 							</div>
 						</div>
 						<div class="row mb-2" style="color:#6c757d; font-size:1.08em;">
 							<div class="col-7">Mode de livraison :</div>
 							<div class="col-5 text-end">
 								<span style="font-weight:600; color:#222;">
-									{{ order is defined and order.transporteur is defined ? order.transporteur : (transporteur.name|default('Non renseigné')) }}
+									{{ transporteur.name|default('Non renseigné') }}
 								</span>
 							</div>
 						</div>
+						{% if cart.reduction is defined and cart.reduction > 0 %}
+							<div class="row mb-1" style="color:#d32f2f; font-size:1.08em;">
+								<div class="col-7">Réduction :</div>
+								<div class="col-5 text-end">-{{ cart.reduction|number_format(2, ',', ' ') }} €</div>
+							</div>
+						{% endif %}
 						<hr style="margin:10px 0 14px 0;">
 						<div class="row align-items-center">
 							<div class="col-7" style="font-size:1.13em; font-weight:700; color:#14287b;">TOTAL TTC :</div>
 							<div class="col-5 text-end" style="font-size:1.35em; font-weight:700; color:#1563d7;">
-								{{ order is defined and order.fraisLivraison is defined ? (total + order.fraisLivraison)|number_format(2, ',', ' ') : (total + transporteur.price|default(0))|number_format(2, ',', ' ') }}
-								€
+								{{ ((cart.totalAvecPromo is defined ? cart.totalAvecPromo : cart.total|default(0)) + transporteur.price|default(0))|number_format(2, ',', ' ') }} €
 							</div>
 						</div>
 						{# Bandeau confirmation commande #}

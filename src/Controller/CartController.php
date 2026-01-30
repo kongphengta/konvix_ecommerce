@@ -86,6 +86,34 @@ class CartController extends AbstractController
         $this->addFlash('info', 'Produit retiré du panier.');
         return $this->redirectToRoute('cart_index');
     }
+    #[Route('/cart/apply-code-promo/{id}', name: 'cart_apply_code_promo', methods: ['POST'])]
+    public function applyCodePromo($id, Request $request, CodePromoRepository $codePromoRepository, CodePromoUsageRepository $codePromoUsageRepository, TokenStorageInterface $tokenStorage): RedirectResponse
+    {
+        $session = $request->getSession();
+        $codePromo = $request->request->get('code_promo', '');
+        if ($codePromo) {
+            $promo = $codePromoRepository->findValidByCode($codePromo);
+            if ($promo) {
+                $user = $tokenStorage->getToken() ? $tokenStorage->getToken()->getUser() : null;
+                if ($user && is_object($user) && method_exists($user, 'getId')) {
+                    if ($codePromoUsageRepository->hasUserUsedCodePromo($user, $promo)) {
+                        $session->remove('cart_code_promo');
+                        $this->addFlash('danger', 'Ce code promo a déjà été utilisé lors d’une précédente commande. Il n’est valable qu’une seule fois par client.');
+                        return $this->redirectToRoute('product_show', ['id' => $id]);
+                    }
+                }
+                $session->set('cart_code_promo', $promo->getCode());
+                $this->addFlash('success', 'Code promo appliqué !');
+            } else {
+                $session->remove('cart_code_promo');
+                $this->addFlash('warning', 'Code promo invalide ou expiré.');
+            }
+        } else {
+            $session->remove('cart_code_promo');
+            $this->addFlash('warning', 'Veuillez saisir un code promo.');
+        }
+        return $this->redirectToRoute('product_show', ['id' => $id]);
+    }
 
     #[Route('/cart/clear', name: 'cart_clear')]
     public function clear(CartService $cartService): RedirectResponse
@@ -95,4 +123,3 @@ class CartController extends AbstractController
         return $this->redirectToRoute('cart_index');
     }
 }
-
