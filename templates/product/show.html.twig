@@ -10,9 +10,9 @@
             <div class="d-flex align-items-center gap-2">
                 <span class="fw-bold">Avis client</span>
                 <span class="ms-2">
-                    {% set total = reviews|length %}
+                    {% set total = product.reviews|length %}
                     {% if total > 0 %}
-                        {% set avg = (reviews|map(r => r.rating)|reduce((a, b) => a + b) / total) %}
+                        {% set avg = (product.reviews|map(r => r.rating)|reduce((a, b) => a + b) / total) %}
                         {% for i in 1..5 %}
                             {% if i <= avg %}
                                 <i class="bi bi-star-fill text-warning"></i>
