@@ -16,6 +16,13 @@ use App\Repository\CouponRepository;
 
 class SellerController extends AbstractController
 {
+    #[Route('/seller', name: 'seller_dashboard')]
+    #[IsGranted('ROLE_SELLER')]
+    public function dashboard(): Response
+    {
+        return $this->render('seller/dashboard.html.twig');
+    }
+
     #[Route('/seller/products', name: 'seller_products')]
     #[IsGranted('ROLE_SELLER')]
     public function listProducts(EntityManagerInterface $em): Response
