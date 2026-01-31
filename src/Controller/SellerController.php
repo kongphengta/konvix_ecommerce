@@ -21,6 +21,7 @@ class SellerController extends AbstractController
     public function listProducts(EntityManagerInterface $em): Response
     {
         $user = $this->getUser();
+        /** @var \App\Entity\User $user */
         $products = $em->getRepository(\App\Entity\Product::class)->findBy(['seller' => $user->getSeller()]);
         return $this->render('seller/products.html.twig', [
             'products' => $products
@@ -32,6 +33,7 @@ class SellerController extends AbstractController
     public function editProduct(\App\Entity\Product $product, Request $request, EntityManagerInterface $em): Response
     {
         $user = $this->getUser();
+        /** @var \App\Entity\User $user */
         if ($product->getSeller() !== $user->getSeller()) {
             throw $this->createAccessDeniedException('Vous ne pouvez éditer que vos propres produits.');
         }
@@ -55,6 +57,7 @@ class SellerController extends AbstractController
     public function deleteProduct(\App\Entity\Product $product, EntityManagerInterface $em): RedirectResponse
     {
         $user = $this->getUser();
+        /** @var \App\Entity\User $user */
         if ($product->getSeller() !== $user->getSeller()) {
             throw $this->createAccessDeniedException('Vous ne pouvez supprimer que vos propres produits.');
         }
@@ -68,6 +71,7 @@ class SellerController extends AbstractController
     public function becomeSeller(EntityManagerInterface $entityManager): RedirectResponse
     {
         $user = $this->getUser();
+        /** @var \App\Entity\User $user */
         if (!$user) {
             $this->addFlash('danger', 'Vous devez être connecté pour devenir vendeur.');
             return $this->redirectToRoute('app_login');
@@ -80,7 +84,7 @@ class SellerController extends AbstractController
                 $seller = new Seller();
                 $seller->setUser($user);
                 // Définir un nom par défaut pour le vendeur (ex: nom d'utilisateur ou email)
-                $defaultName = $user->getUsername() ?? $user->getEmail() ?? 'Vendeur';
+                $defaultName = $user->getUserIdentifier() ?? $user->getEmail() ?? 'Vendeur';
                 $seller->setName($defaultName);
                 $entityManager->persist($seller);
             }
@@ -91,24 +95,18 @@ class SellerController extends AbstractController
         return $this->redirectToRoute('app_home');
     }
 
-    #[Route('/seller/dashboard', name: 'seller_dashboard')]
-    #[IsGranted('ROLE_SELLER')]
-    public function dashboard(): Response
-    {
-        return $this->render('seller/dashboard.html.twig');
-    }
-
     #[Route('/seller/orders', name: 'seller_orders')]
     #[IsGranted('ROLE_SELLER')]
     public function listOrders(EntityManagerInterface $em): Response
     {
         $user = $this->getUser();
+        /** @var \App\Entity\User $user */
         $seller = $user->getSeller();
         // Récupérer tous les OrderItems liés à ce vendeur
         $orderItems = $em->getRepository(\App\Entity\OrderItem::class)
             ->createQueryBuilder('oi')
             ->join('oi.product', 'p')
-            ->join('oi.oderRef', 'o')
+            ->join('oi.order', 'o')
             ->where('p.seller = :seller')
             ->setParameter('seller', $seller)
             ->orderBy('o.createdAt', 'DESC')
@@ -124,6 +122,7 @@ class SellerController extends AbstractController
     public function orderDetail(\App\Entity\Order $order, EntityManagerInterface $em): Response
     {
         $user = $this->getUser();
+        /** @var \App\Entity\User $user */
         $seller = $user->getSeller();
         // Vérifier que le vendeur a au moins un produit dans cette commande
         $hasProduct = false;
@@ -146,6 +145,7 @@ class SellerController extends AbstractController
     public function changeOrderStatus(\App\Entity\Order $order, EntityManagerInterface $em): Response
     {
         $user = $this->getUser();
+        /** @var \App\Entity\User $user */
         $seller = $user->getSeller();
         // Vérifier que le vendeur a au moins un produit dans cette commande
         $hasProduct = false;
@@ -173,6 +173,7 @@ class SellerController extends AbstractController
     public function newProduct(Request $request, EntityManagerInterface $em): Response
     {
         $user = $this->getUser();
+        /** @var \App\Entity\User $user */
         $seller = $user->getSeller();
         // Création automatique du Seller si besoin
         if (!$seller && in_array('ROLE_SELLER', $user->getRoles(), true)) {
@@ -203,13 +204,13 @@ class SellerController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
-        // ========== GESTION DES CODES PROMO ==========
+    // ========== GESTION DES CODES PROMO ==========
 
     #[Route('/seller/coupons', name: 'seller_coupons_list')]
     public function listCoupons(CouponRepository $couponRepository): Response
     {
         $seller = $this->getUser();
-        
+
         if (!$this->isGranted('ROLE_SELLER')) {
             $this->addFlash('error', 'Accès réservé aux vendeurs');
             return $this->redirectToRoute('app_home');
@@ -229,7 +230,7 @@ class SellerController extends AbstractController
     public function newCoupon(Request $request, EntityManagerInterface $em): Response
     {
         $seller = $this->getUser();
-        
+
         if (!$this->isGranted('ROLE_SELLER')) {
             $this->addFlash('error', 'Accès réservé aux vendeurs');
             return $this->redirectToRoute('app_home');
@@ -237,14 +238,14 @@ class SellerController extends AbstractController
 
         $coupon = new Coupon();
         $coupon->setSeller($seller);
-        
+
         $form = $this->createForm(CouponType::class, $coupon);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             // Vérifier que le code n'existe pas déjà
             $existingCoupon = $em->getRepository(Coupon::class)->findOneBy(['code' => $coupon->getCode()]);
-            
+
             if ($existingCoupon) {
                 $this->addFlash('error', 'Ce code promo existe déjà.  Veuillez en choisir un autre.');
             } else {
@@ -270,14 +271,14 @@ class SellerController extends AbstractController
     public function editCoupon(Coupon $coupon, Request $request, EntityManagerInterface $em): Response
     {
         $seller = $this->getUser();
-        
+
         if (!$this->isGranted('ROLE_SELLER') || $coupon->getSeller() !== $seller) {
             $this->addFlash('error', 'Vous ne pouvez pas modifier ce code promo');
             return $this->redirectToRoute('seller_coupons_list');
         }
 
         $originalCode = $coupon->getCode();
-        
+
         $form = $this->createForm(CouponType::class, $coupon);
         $form->handleRequest($request);
 
@@ -285,7 +286,7 @@ class SellerController extends AbstractController
             // Si le code a été modifié, vérifier qu'il n'existe pas déjà
             if ($coupon->getCode() !== $originalCode) {
                 $existingCoupon = $em->getRepository(Coupon::class)->findOneBy(['code' => $coupon->getCode()]);
-                
+
                 if ($existingCoupon) {
                     $this->addFlash('error', 'Ce code promo existe déjà. Veuillez en choisir un autre.');
                     return $this->render('seller/coupons/edit.html.twig', [
@@ -315,13 +316,13 @@ class SellerController extends AbstractController
     public function deleteCoupon(Coupon $coupon, Request $request, EntityManagerInterface $em): Response
     {
         $seller = $this->getUser();
-        
+
         if (!$this->isGranted('ROLE_SELLER') || $coupon->getSeller() !== $seller) {
             $this->addFlash('error', 'Vous ne pouvez pas supprimer ce code promo');
             return $this->redirectToRoute('seller_coupons_list');
         }
 
-        if ($this->isCsrfTokenValid('delete'.$coupon->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $coupon->getId(), $request->request->get('_token'))) {
             $em->remove($coupon);
             $em->flush();
             $this->addFlash('success', 'Code promo supprimé avec succès');

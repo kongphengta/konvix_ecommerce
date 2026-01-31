@@ -24,21 +24,21 @@
             <tbody>
                 {% for item in orderItems %}
                     <tr>
-                        <td>{{ item.oderRef.createdAt|date('d/m/Y H:i') }}</td>
+                        <td>{{ item.order.createdAt|date('d/m/Y H:i') }}</td>
                         <td>{{ item.product.name }}</td>
-                        <td>{{ item.oderRef.user.email }}</td>
+                        <td>{{ item.order.user.email }}</td>
                         <td>{{ item.quantity }}</td>
                         <td>{{ item.price|number_format(2, '.', ' ') }} €</td>
                         <td>{{ (item.price * item.quantity)|number_format(2, '.', ' ') }} €</td>
-                        <td>{{ item.oderRef.status }}</td>
+                        <td>{{ item.order.status }}</td>
                         <td>
-                            <a href="{{ path('seller_order_detail', {id: item.oderRef.id}) }}" class="btn btn-sm btn-info">Voir le détail</a>
+                            <a href="{{ path('seller_order_detail', {id: item.order.id}) }}" class="btn btn-sm btn-info">Voir le détail</a>
                         </td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
     {% endif %}
-    <a href="{{ path('seller_dashboard') }}" class="btn btn-secondary mt-3">Retour espace vendeur</a>
+    <a href="{{ path('seller_products') }}" class="btn btn-secondary mt-3">Retour espace vendeur</a>
 </div>
 {% endblock %}
