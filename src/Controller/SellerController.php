@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use App\Entity\Coupon;
 use App\Form\CouponType;
 use App\Repository\CouponRepository;
+use App\Service\LaPosteTrackingService;
 
 class SellerController extends AbstractController
 {
@@ -336,5 +337,19 @@ class SellerController extends AbstractController
         }
 
         return $this->redirectToRoute('seller_coupons_list');
+    }
+
+    /**
+     * Exemple d'appel pour récupérer le statut d'un colis
+     */
+    #[Route('/seller/track/{trackingNumber}', name: 'seller_track_colis')]
+    #[IsGranted('ROLE_SELLER')]
+    public function trackColis(string $trackingNumber, LaPosteTrackingService $trackingService): Response
+    {
+        $result = $trackingService->getTrackingStatus($trackingNumber);
+        return $this->render('seller/track_colis.html.twig', [
+            'trackingNumber' => $trackingNumber,
+            'result' => $result
+        ]);
     }
 }

@@ -16,6 +16,7 @@ use App\Repository\CodePromoRepository;
 use App\Repository\CodePromoUsageRepository;
 use App\Entity\CodePromoUsage;
 
+
 class CheckoutController extends AbstractController
 {
 
@@ -152,7 +153,7 @@ class CheckoutController extends AbstractController
         MailerInterface $mailer,
         \Doctrine\ORM\EntityManagerInterface $entityManager,
         CodePromoRepository $codePromoRepository,
-        CodePromoUsageRepository $codePromoUsageRepository
+        CodePromoUsageRepository $codePromoUsageRepository,
     ): Response {
         $cart = $cartService->getDetailedCart();
         $user = $this->getUser();
@@ -196,11 +197,15 @@ class CheckoutController extends AbstractController
         $order->setTransporteur($transporteur['name'] ?? 'Non renseigné');
         $order->setStatus('payé');
         $user->addOrder($order);
+
         $entityManager->persist($order);
         $entityManager->persist($user);
 
         // Création des OrderItem pour chaque produit du panier
+        // et préparation de la notification vendeur
+        $vendeursProduits = [];
         foreach ($cart['items'] as $item) {
+                        // Plus de dd(), process normal
             $orderItem = new \App\Entity\OrderItem();
             $orderItem->setOrder($order);
             $orderItem->setProduct($item['product']);
@@ -209,15 +214,85 @@ class CheckoutController extends AbstractController
             $entityManager->persist($orderItem);
             $order->addOrderItem($orderItem);
 
-            // Recharge le produit depuis Doctrine pour garantir la persistance
+            // Gestion stock produit
             $product = $entityManager->getRepository(\App\Entity\Product::class)->find($item['product']->getId());
             if ($product) {
                 $product->setStock($product->getStock() - $item['quantity']);
                 $entityManager->persist($product);
             }
+
+            // Regroupement par vendeur
+            $seller = method_exists($item['product'], 'getSeller') ? $item['product']->getSeller() : null;
+            if ($seller && $seller->getUser() && $seller->getUser()->getEmail()) {
+                $sellerId = $seller->getId();
+                if (!isset($vendeursProduits[$sellerId])) {
+                    $vendeursProduits[$sellerId] = [
+                        'seller' => $seller,
+                        'items' => [],
+                    ];
+                }
+                $vendeursProduits[$sellerId]['items'][] = $item;
+            }
         }
 
         $entityManager->flush();
+
+        // Notification email à chaque vendeur concerné
+        foreach ($vendeursProduits as $data) {
+            $seller = $data['seller'];
+            $sellerUser = $seller->getUser();
+            $sellerEmail = $sellerUser ? $sellerUser->getEmail() : null;
+            $sellerName = method_exists($sellerUser, 'getFullName') ? $sellerUser->getFullName() : ($sellerUser->getFirstName() . ' ' . $sellerUser->getLastName());
+            $produits = $data['items'];
+
+            if ($sellerEmail) {
+
+                // Calcul de la date limite d'expédition (2 jours après la commande)
+                $orderDate = $order->getCreatedAt() ?? new \DateTimeImmutable();
+                $deadline = $orderDate->modify('+2 days');
+
+                // Préparation du contenu HTML de l'email vendeur
+                $htmlVendeur = $this->renderView('email/seller_order_notification.html.twig', [
+                    'sellerName' => $sellerName,
+                    'produits' => $produits,
+                    'clientName' => $user->getFirstName() . ' ' . $user->getLastName(),
+                    'clientAddress' => $address['address'] . ', ' . $address['zip'] . ' ' . $address['city'] . ', ' . $address['country'],
+                    'clientPhone' => $address['phone'],
+                    'deadline' => $deadline,
+                ]);
+
+                $emailVendeur = (new Email())
+                    ->from('no-reply@konvix.fr')
+                    ->to($sellerEmail)
+                    ->subject('Nouvelle commande à préparer sur Konvix')
+                    ->html($htmlVendeur);
+                $mailer->send($emailVendeur);
+            }
+
+            if ($sellerEmail) {
+                // Construction du message (simple, peut être amélioré en HTML)
+                $produitsTxt = "";
+                foreach ($produits as $prodItem) {
+                    $produitsTxt .= "- " . $prodItem['product']->getName() . " x" . $prodItem['quantity'] . "\n";
+                }
+                $message = "Bonjour $sellerName,\n\n";
+                $message .= "Une nouvelle commande contenant vos produits a été passée sur Konvix.\n";
+                $message .= "Merci de préparer et expédier les articles suivants :\n\n";
+                $message .= $produitsTxt . "\n";
+                $message .= "Coordonnées du client :\n";
+                $message .= $user->getFirstName() . " " . $user->getLastName() . "\n";
+                $message .= $address['address'] . ", " . $address['zip'] . " " . $address['city'] . ", " . $address['country'] . "\n";
+                $message .= "Téléphone : " . $address['phone'] . "\n";
+                $message .= "\nMerci de traiter cette commande dans les meilleurs délais.\n\nL'équipe Konvix";
+
+                $emailVendeur = (new Email())
+                    ->from('no-reply@konvix.fr')
+                    ->to($sellerEmail)
+                    ->subject('Nouvelle commande à préparer sur Konvix')
+                    ->text($message);
+                $mailer->send($emailVendeur);
+            }
+        }
 
         // Enregistrer l'utilisation du code promo si applicable
         if ($codePromoEntity) {
@@ -454,7 +529,7 @@ class CheckoutController extends AbstractController
             $session->remove('cart_code_promo');
         }
 
-       
+
         // ...avant l'envoi de l'email de confirmation dans successPaypal()...
         $order = new \App\Entity\Order();
         $order->setUser($user);

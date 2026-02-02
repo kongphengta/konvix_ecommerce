@@ -15,6 +15,19 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 #[Vich\Uploadable]
 class Product
 {
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $weight = null;
+
+    public function getWeight(): ?float
+    {
+        return $this->weight;
+    }
+
+    public function setWeight(?float $weight): static
+    {
+        $this->weight = $weight;
+        return $this;
+    }
     #[ORM\Column(type: 'boolean')]
     private bool $isValidated = false;
     public function isValidated(): bool

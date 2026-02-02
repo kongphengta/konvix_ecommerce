@@ -7,6 +7,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 
 class SellerCrudController extends AbstractCrudController
 {
@@ -15,14 +16,15 @@ class SellerCrudController extends AbstractCrudController
         return Seller::class;
     }
 
-    /*
     public function configureFields(string $pageName): iterable
     {
         return [
-            IdField::new('id'),
-            TextField::new('title'),
+            IdField::new('id')->hideOnForm(),
+            TextField::new('name'),
             TextEditorField::new('description'),
+            AssociationField::new('user')
+                ->setRequired(true)
+                ->setFormTypeOption('choice_label', 'email'),
         ];
     }
-    */
 }

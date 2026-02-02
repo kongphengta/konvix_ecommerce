@@ -110,7 +110,8 @@
 					<table class="table table-bordered table-striped">
 						<thead>
 							<tr>
-								<th>N° Commande</th>
+								<th>Numéro de suivi</th>
+								<th>Numéro de Commande</th>
 								<th>Date</th>
 								<th>Produit</th>
 								<th>Image</th>
@@ -125,6 +126,17 @@
 						<tbody>
 							{% for order in orders|slice(0,5) %}
 								<tr>
+									<td>
+										{% if order.trackingNumber %}
+											<span class="badge bg-success fs-6">{{ order.trackingNumber }}</span>
+											<a href="{{ path('seller_track_colis', {'trackingNumber': order.trackingNumber}) }}" class="btn btn-sm btn-warning ms-2" title="Suivre le colis">
+												<i class="bi bi-truck"></i>
+												Suivi colis
+											</a>
+										{% else %}
+											<span class="text-muted">-</span>
+										{% endif %}
+									</td>
 									<td>{{ order.id ?? '-' }}</td>
 									<td>{{ order.createdAt ? order.createdAt|date('d/m/Y H:i') : '' }}</td>
 									<td>

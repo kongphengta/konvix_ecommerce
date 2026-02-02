@@ -5,6 +5,8 @@ parameters:
     STRIPE_PUBLIC_KEY: '%env(STRIPE_PUBLIC_KEY)%'
     STRIPE_SECRET_KEY: '%env(STRIPE_SECRET_KEY)%'
 
+    LA_POSTE_API_KEY: '%env(LA_POSTE_API_KEY)%'
+
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -15,6 +17,13 @@ services:
     App\:
         resource: '../src/'
 
+    App\Service\LaPosteTrackingService:
+        arguments:
+            $apiKey: '%LA_POSTE_API_KEY%'
+
+    App\Service\ColissimoShippingService:
+        arguments:
+            $apiKey: '%LA_POSTE_API_KEY%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

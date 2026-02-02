@@ -61,7 +61,8 @@ class RegistrationController extends AbstractController
             } else {
                 // encode the plain password
                 $user->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
-
+                // Ajout de la date d'inscription
+                $user->setRegisteredAt(new \DateTimeImmutable());
                 $entityManager->persist($user);
                 $entityManager->flush();
 

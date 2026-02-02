@@ -42,6 +42,19 @@ class Order
     #[ORM\OneToMany(targetEntity: OrderItem::class, mappedBy: 'order')]
     private Collection $orderItems;
 
+    #[ORM\Column(type: 'string', length: 50, nullable: true)]
+    private ?string $trackingNumber = null;
+    public function getTrackingNumber(): ?string
+    {
+        return $this->trackingNumber;
+    }
+
+    public function setTrackingNumber(?string $trackingNumber): static
+    {
+        $this->trackingNumber = $trackingNumber;
+        return $this;
+    }
+
     public function __construct()
     {
         $this->orderItems = new ArrayCollection();
