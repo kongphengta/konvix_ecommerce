@@ -17,13 +17,7 @@ services:
     App\:
         resource: '../src/'
 
-    App\Service\LaPosteTrackingService:
-        arguments:
-            $apiKey: '%LA_POSTE_API_KEY%'
 
-    App\Service\ColissimoShippingService:
-        arguments:
-            $apiKey: '%LA_POSTE_API_KEY%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
