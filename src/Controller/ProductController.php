@@ -25,12 +25,11 @@ final class ProductController extends AbstractController
         return $this->render('product/create.html.twig');
     }
 
-
     #[Route('/', name: 'app_home')]
     public function index(): Response
     {
         // Page d'accueil simple, à personnaliser selon tes besoins
-        return $this->render('home/index.html.twig');
+        return $this->redirectToRoute('product_list');
     }
 
     #[Route('/products', name: 'product_list')]
