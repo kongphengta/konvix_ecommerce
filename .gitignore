@@ -9,6 +9,7 @@
 /vendor/
 public/uploads/
 DEPOT2_Fonctionnalites.md
+DEPOT_Final.md
 ###< symfony/framework-bundle ###
 
 ###> symfony/webpack-encore-bundle ###
@@ -23,3 +24,7 @@ yarn-error.log
 /tests_doc
 /config/api_keys.php
 ###< tests documentation ###
+
+###> IDEs and editors ###
+
+###< IDEs and editors ###
