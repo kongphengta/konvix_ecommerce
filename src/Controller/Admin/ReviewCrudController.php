@@ -2,7 +2,8 @@
 
 namespace App\Controller\Admin;
 
-use BcMath\Number;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\BooleanFilter;
 use App\Entity\Review;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
@@ -28,5 +29,11 @@ class ReviewCrudController extends AbstractCrudController
             \EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField::new('createdAt', 'Date')->hideOnForm(),
             \EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField::new('isValidated', 'Validé'),
         ];
+    }
+
+    public function configureFilters(Filters $filters): Filters
+    {
+        return $filters
+            ->add(BooleanFilter::new('isValidated', 'Validé'));
     }
 }
