@@ -19,7 +19,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+ use Symfony\Bundle\SecurityBundle\Attribute\IsGranted;
 
+#[IsGranted('ROLE_SELLER')]
 class ProductCrudController extends AbstractCrudController
 {
     public function configureActions(Actions $actions): Actions
