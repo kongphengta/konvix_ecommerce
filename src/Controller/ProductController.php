@@ -117,6 +117,7 @@ final class ProductController extends AbstractController
             $this->addFlash('success', 'Merci pour votre avis !');
             return $this->redirectToRoute('app_product_show', ['id' => $product->getId()]);
         }
+        // Récupérer les avis valides du produit
         $validatedReviews = $em->getRepository(\App\Entity\Review::class)->findBy([
             'product' => $product,
             'isValidated' => true
@@ -135,7 +136,19 @@ final class ProductController extends AbstractController
             }
         }
 
+        // Définir l'image principale
         $img = '/uploads/product_images/' . $product->getImageFolder() . '/' . $product->getMainImage();
+
+        // Calcul de la note moyenne
+        $averageRating = null;
+        if (count($validatedReviews) > 0) {
+            $sum = 0;
+            foreach ($validatedReviews as $review) {
+                $sum += $review->getRating();
+            }
+            $averageRating = $sum / count($validatedReviews);
+        }
+
         return $this->render('product/show.html.twig', [
             'img' => $img,
             'product'    => $product,
@@ -143,6 +156,7 @@ final class ProductController extends AbstractController
             'thumbnails' => $thumbnails,
             'reviewForm' => $form->createView(),
             'alreadyReviewed' => $alreadyReviewed,
+            'averageRating' => $averageRating,
         ]);
     }
 }
