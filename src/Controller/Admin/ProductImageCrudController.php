@@ -15,11 +15,13 @@ class ProductImageCrudController extends AbstractCrudController
 {
     public static function getEntityFqcn(): string
     {
+        // Retourne la classe de l'entité ProductImage
         return ProductImage::class;
     }
 
     public function configureFields(string $pageName): iterable
     {
+        // Configure les champs à afficher dans l'interface d'administration pour l'entité ProductImage
         return [
             IdField::new('id')->hideOnForm(),
             AssociationField::new('product'),

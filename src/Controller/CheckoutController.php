@@ -19,14 +19,14 @@ use App\Entity\CodePromoUsage;
 
 class CheckoutController extends AbstractController
 {
-
+    // Affichage d'annulation de paiement.
     #[Route('/checkout/cancel', name: 'checkout_cancel')]
     public function cancel(): Response
     {
         $this->addFlash('danger', 'Le paiement a été annulé ou rejeté. Votre commande n’a pas été validée.');
         return $this->render('checkout/cancel.html.twig');
     }
-
+    // Affiche la page de checkout (adresse, transporteur, panier).
     #[Route('/checkout', name: 'checkout_index')]
     public function index(CartService $cartService, Request $request): Response
     {
@@ -205,7 +205,7 @@ class CheckoutController extends AbstractController
         // et préparation de la notification vendeur
         $vendeursProduits = [];
         foreach ($cart['items'] as $item) {
-                        // Plus de dd(), process normal
+            // Plus de dd(), process normal
             $orderItem = new \App\Entity\OrderItem();
             $orderItem->setOrder($order);
             $orderItem->setProduct($item['product']);
@@ -528,8 +528,6 @@ class CheckoutController extends AbstractController
             }
             $session->remove('cart_code_promo');
         }
-
-
         // ...avant l'envoi de l'email de confirmation dans successPaypal()...
         $order = new \App\Entity\Order();
         $order->setUser($user);

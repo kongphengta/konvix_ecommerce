@@ -14,18 +14,21 @@ use Symfony\Component\Mime\Email;
 
 class SellerRequestController extends AbstractController
 {
+    // Affiche la liste des demandes de vendeur dans l'interface d'administration
     #[Route('/admin/seller-requests', name: 'admin_seller_requests')]
     public function index(EntityManagerInterface $em): Response
     {
+        // Récupère toutes les demandes de vendeur triées par date de création décroissante
         $requests = $em->getRepository(SellerRequest::class)->findBy([], ['createdAt' => 'DESC']);
         return $this->render('admin/seller_requests.html.twig', [
             'requests' => $requests,
         ]);
     }
-
+    // Valide une demande de vendeur, ajoute le rôle ROLE_SELLER à l'utilisateur, supprime la demande et envoie un email de validation
     #[Route('/admin/seller-requests/validate/{id}', name: 'admin_seller_request_validate')]
     public function validate(int $id, EntityManagerInterface $em, MailerInterface $mailer): RedirectResponse
     {
+        // Récupère la demande de vendeur par son ID
         $request = $em->getRepository(SellerRequest::class)->find($id);
         if ($request && $request->getUser()) {
             $user = $request->getUser();
@@ -48,16 +51,18 @@ class SellerRequestController extends AbstractController
         }
         return $this->redirectToRoute('admin_seller_requests');
     }
-
+    // Refuse une demande de vendeur, supprime la demande et envoie un email de refus
     #[Route('/admin/seller-requests/refuse/{id}', name: 'admin_seller_request_refuse')]
     public function refuse(int $id, EntityManagerInterface $em): RedirectResponse
     {
+        // Récupère la demande de vendeur par son ID
         $request = $em->getRepository(SellerRequest::class)->find($id);
         if ($request) {
             $em->remove($request);
             $em->flush();
             $this->addFlash('info', 'La demande a été refusée et supprimée.');
         }
+        // Redirige vers la liste des demandes de vendeur après le refus
         return $this->redirectToRoute('admin_seller_requests');
     }
 }

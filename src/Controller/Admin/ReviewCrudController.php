@@ -15,11 +15,13 @@ class ReviewCrudController extends AbstractCrudController
 {
     public static function getEntityFqcn(): string
     {
+        // Retourne la classe de l'entité Review
         return Review::class;
     }
 
     public function configureFields(string $pageName): iterable
     {
+        // Configure les champs à afficher dans l'interface d'administration pour l'entité Review
         return [
             IdField::new('id')->hideOnForm(),
             TextField::new('product.name', 'Produit'),

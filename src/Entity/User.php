@@ -6,6 +6,7 @@ use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use App\Entity\Role;
+use App\Entity\Product;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -17,8 +18,35 @@ use Symfony\Component\Security\Core\User\UserInterface;
 #[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
 
 
+
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    /**
+     * @var Collection<int, Product>
+     */
+    #[ORM\ManyToMany(targetEntity: Product::class)]
+    #[ORM\JoinTable(name: 'user_wishlist')]
+    private Collection $wishlistedProducts;
+
+    public function getWishlistedProducts(): Collection
+    {
+        return $this->wishlistedProducts;
+    }
+
+    public function addWishlistedProduct(Product $product): self
+    {
+        if (!$this->wishlistedProducts->contains($product)) {
+            $this->wishlistedProducts->add($product);
+        }
+        return $this;
+    }
+
+    public function removeWishlistedProduct(Product $product): self
+    {
+        $this->wishlistedProducts->removeElement($product);
+        return $this;
+    }
+    // ...existing code...
 
     #[ORM\Column(type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'])]
     private ?\DateTimeImmutable $registeredAt = null;
@@ -154,6 +182,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->orders = new ArrayCollection();
         $this->roleEntities = new ArrayCollection();
         $this->coupons = new ArrayCollection();
+        $this->wishlistedProducts = new ArrayCollection();
     }
 
     #[ORM\Column(length: 255, nullable: true)]

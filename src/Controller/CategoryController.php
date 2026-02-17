@@ -9,6 +9,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class CategoryController extends AbstractController
 {
+    // Affiche les produits d'une catégorie spécifique en fonction de son ID, avec une pagination et une barre de recherche pour filtrer les produits par nom ou description
     #[Route('/category/{id}', name: 'category_index')]
     public function index(Category $category): Response
     {

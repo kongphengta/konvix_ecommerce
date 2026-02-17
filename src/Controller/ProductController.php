@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Entity\Product;
 use Doctrine\ORM\EntityManagerInterface;
-use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
+
 
 
 final class ProductController extends AbstractController
@@ -47,6 +47,8 @@ final class ProductController extends AbstractController
         } else {
             $allProducts = $em->getRepository(Product::class)->findAll();
         }
+        // Mélange aléatoire des produits
+        shuffle($allProducts);
 
         $total = count($allProducts);
         $offset = ($page - 1) * $limit;

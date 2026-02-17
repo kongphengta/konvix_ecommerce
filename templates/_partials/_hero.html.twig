@@ -7,17 +7,32 @@
 		</div>
 		<div class="carousel-inner rounded shadow">
 			<div class="carousel-item active">
-				<img src="{{ asset('uploads/product_images/CarrouselKonvix_1.jpg') }}" class="d-block w-100" alt="Caroussel 1" style="height: 340px; object-fit: cover;">
+				<img src="{{ asset('uploads/product_images/CarrouselKonvix_1.jpg') }}" class="d-block w-100 carousel-img" alt="Caroussel 1">
 
 			</div>
 			<div class="carousel-item">
-				<img src="{{ asset('uploads/product_images/CarrouselKonvix_2.jpg') }}" class="d-block w-100" alt="Caroussel 2" style="height: 340px; object-fit: cover;">
+				<img src="{{ asset('uploads/product_images/CarrouselKonvix_2.jpg') }}" class="d-block w-100 carousel-img" alt="Caroussel 2">
 			</div>
 			<div class="carousel-item">
-				<img src="{{ asset('uploads/product_images/CarrouselKonvix_3.jpg') }}" class="d-block w-100" alt="Caroussel 3" style="height: 340px; object-fit: cover;">
+				<img src="{{ asset('uploads/product_images/CarrouselKonvix_3.jpg') }}" class="d-block w-100 carousel-img" alt="Caroussel 3">
 
 			</div>
 		</div>
+		<style>
+			@media(max-width: 575.98px) {
+				.carousel-img {
+					height: auto !important;
+					max-height: 200px;
+					object-fit: contain !important;
+				}
+			}
+			@media(min-width: 576px) {
+				.carousel-img {
+					height: 340px;
+					object-fit: cover;
+				}
+			}
+		</style>
 		<button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
 			<span class="carousel-control-prev-icon" aria-hidden="true"></span>
 			<span class="visually-hidden">Précédent</span>

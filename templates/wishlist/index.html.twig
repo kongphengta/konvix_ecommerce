@@ -1,0 +1,34 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Favoris{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1 class="mb-4">Mes Favoris</h1>
+    {% if products is empty %}
+        <div class="alert alert-info">Vous n'avez aucun produit en favori.</div>
+    {% else %}
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            {% for product in products %}
+                <div class="col">
+                    <div class="card h-100">
+                        {% if product.getMainImagePath() %}
+                            <img src="{{ asset('uploads/product_images/' ~ product.getMainImagePath()) }}" class="card-img-top" alt="{{ product.name }}">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ product.name }}</h5>
+                            <p class="card-text">{{ product.description|u.truncate(80, '...') }}</p>
+                            <a href="{{ path('app_product_show', {id: product.id}) }}" class="btn btn-primary">Voir le produit</a>
+                            <form method="post" action="{{ path('wishlist_remove', {id: product.id}) }}" style="display:inline">
+                                <button type="submit" class="btn btn-outline-danger ms-2" title="Retirer des favoris">
+                                    <i class="bi bi-heartbreak"></i> Retirer
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

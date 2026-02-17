@@ -15,6 +15,7 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 
 class CartController extends AbstractController
 {
+    // Affiche le contenu du panier avec les détails des produits, le total, les réductions appliquées et le code promo utilisé, ainsi que le transporteur sélectionné
     #[Route('/cart/checkout', name: 'cart_checkout', methods: ['POST'])]
     public function checkout(Request $request, CodePromoRepository $codePromoRepository, CodePromoUsageRepository $codePromoUsageRepository, TokenStorageInterface $tokenStorage): RedirectResponse
     {
@@ -54,6 +55,7 @@ class CartController extends AbstractController
         $session->set('cart_transporteur', $selected);
         return $this->redirectToRoute('checkout_index', ['transporteur' => $selected]);
     }
+    // Affiche le contenu du panier avec les détails des produits, le total, les réductions appliquées et le code promo utilisé, ainsi que le transporteur sélectionné
     #[Route('/cart', name: 'cart_index')]
     public function index(CartService $cartService, Request $request): Response
     {
@@ -69,7 +71,7 @@ class CartController extends AbstractController
             'selectedTransporteur' => $selectedTransporteur
         ]);
     }
-
+    // Ajoute un produit au panier avec une quantité optionnelle, puis redirige vers la page du panier avec un message de succès
     #[Route('/cart/add/{id}', name: 'cart_add')]
     public function add($id, CartService $cartService, Request $request): RedirectResponse
     {
@@ -78,7 +80,7 @@ class CartController extends AbstractController
         $this->addFlash('success', 'Produit ajouté au panier !');
         return $this->redirectToRoute('cart_index');
     }
-
+    // Supprime un produit du panier et redirige vers la page du panier avec un message d'information
     #[Route('/cart/remove/{id}', name: 'cart_remove')]
     public function remove($id, CartService $cartService): RedirectResponse
     {
@@ -86,6 +88,7 @@ class CartController extends AbstractController
         $this->addFlash('info', 'Produit retiré du panier.');
         return $this->redirectToRoute('cart_index');
     }
+    // Met à jour la quantité d'un produit dans le panier, puis redirige vers la page du panier avec un message de succès
     #[Route('/cart/apply-code-promo/{id}', name: 'cart_apply_code_promo', methods: ['POST'])]
     public function applyCodePromo($id, Request $request, CodePromoRepository $codePromoRepository, CodePromoUsageRepository $codePromoUsageRepository, TokenStorageInterface $tokenStorage): RedirectResponse
     {
@@ -114,7 +117,7 @@ class CartController extends AbstractController
         }
         return $this->redirectToRoute('product_show', ['id' => $id]);
     }
-
+    // Vide le panier et redirige vers la page du panier avec un message de avertissement
     #[Route('/cart/clear', name: 'cart_clear')]
     public function clear(CartService $cartService): RedirectResponse
     {

@@ -13,11 +13,13 @@ class SellerCrudController extends AbstractCrudController
 {
     public static function getEntityFqcn(): string
     {
+        // Retourne la classe de l'entité Seller
         return Seller::class;
     }
 
     public function configureFields(string $pageName): iterable
     {
+        // Configure les champs à afficher dans l'interface d'administration pour l'entité Seller
         return [
             IdField::new('id')->hideOnForm(),
             TextField::new('name'),

@@ -6,22 +6,6 @@
 	<div class="card mb-4">
 		<div class="card-header d-flex justify-content-between align-items-center bg-white" style="padding: 1.2rem 2rem 0.5rem 2rem;">
 			<span class="fw-bold fs-4">Présentation du produit</span>
-			{% if averageRating %}
-				<div class="d-flex align-items-center mb-2">
-					{% for i in 1..5 %}
-						{% if i <= averageRating %}
-							<i class="bi bi-star-fill text-warning fs-4"></i>
-						{% elseif i - averageRating < 1 %}
-							<i class="bi bi-star-half text-warning fs-4"></i>
-						{% else %}
-							<i class="bi bi-star text-warning fs-4"></i>
-						{% endif %}
-					{% endfor %}
-					<span class="ms-2 fw-bold">{{ averageRating|number_format(1) }}/5</span>
-				</div>
-			{% else %}
-				<div class="mb-2 text-muted">Pas encore de note pour ce produit.</div>
-			{% endif %}
 			<div class="d-flex align-items-center gap-2">
 				<span class="fw-bold">Avis client</span>
 				<span class="ms-2">
@@ -96,10 +80,25 @@
 						<span class="fw-bold text-secondary">Référence du produit :
 							{{ product.id }}</span>
 					</div>
-					<span class="text-secondary mb-2 d-block">
-						<i class="bi bi-heart"></i>
-						Favoris
-					</span>
+					{% if app.user %}
+						{% set isWishlisted = false %}
+						{% for fav in app.user.getWishlistedProducts() %}
+							{% if fav.id == product.id %}
+								{% set isWishlisted = true %}
+							{% endif %}
+						{% endfor %}
+						<form method="post" action="{{ path(isWishlisted ? 'wishlist_remove' : 'wishlist_add', {id: product.id}) }}" style="display:inline">
+							<button type="submit" class="btn btn-outline-{{ isWishlisted ? 'danger' : 'primary' }} btn-sm">
+								<i class="bi {{ isWishlisted ? 'bi-heart-fill' : 'bi-heart' }}"></i>
+								{{ isWishlisted ? 'Retirer des favoris' : 'Ajouter aux favoris' }}
+							</button>
+						</form>
+					{% else %}
+						<span class="text-secondary mb-2 d-block">
+							<i class="bi bi-heart"></i>
+							Connectez-vous pour ajouter aux favoris
+						</span>
+					{% endif %}
 					<hr class="my-3">
 				</div>
 				<!-- Colonne droite : stock/panier -->

@@ -1,0 +1,107 @@
+
+{# templates/admin/dashboard/index.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Super Admin{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1 class="mb-4">Dashboard Super Admin</h1>
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-header">Utilisateurs</div>
+                <div class="card-body">
+                    <h5 class="card-title">Total : <span class="badge bg-light text-dark">{{ nbUsers|default(120) }}</span></h5>
+                    <p class="card-text">Nouveaux inscrits ce mois : <b>{{ newUsers|default(8) }}</b></p>
+                    <a href="{{ path('admin', {'crudControllerFqcn': 'App\\Controller\\Admin\\SellerController'}) }}" class="btn btn-light btn-sm">Voir les vendeurs</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-header">Ventes</div>
+                <div class="card-body">
+                    <h5 class="card-title">CA : <span class="badge bg-light text-dark">{{ revenue|default('12 500 €') }}</span></h5>
+                    <p class="card-text">Commandes ce mois : <b>{{ nbOrders|default(42) }}</b></p>
+                    <a href="{{ path('admin', {'crudControllerFqcn': 'App\\Controller\\Admin\\OrderCrudController'}) }}" class="btn btn-light btn-sm">Voir les commandes</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning mb-3">
+                <div class="card-header">Produits</div>
+                <div class="card-body">
+                    <h5 class="card-title">À valider : <span class="badge bg-light text-dark">{{ nbToValidate|default(5) }}</span></h5>
+                    <p class="card-text">En rupture : <b>{{ nbOutOfStock|default(3) }}</b></p>
+                    <a href="{{ path('admin', {'crudControllerFqcn': 'App\\Controller\\Admin\\ProductCrudController'}) }}" class="btn btn-light btn-sm">Voir les produits</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info mb-3">
+                <div class="card-header">Liens rapides</div>
+                <div class="card-body">
+                    <a href="{{ path('admin', {'crudControllerFqcn': 'App\\Controller\\Admin\\CategoryCrudController'}) }}" class="btn btn-outline-light btn-sm mb-2">Catégories</a><br>
+                    <a href="{{ path('admin', {'crudControllerFqcn': 'App\\Controller\\Admin\\ReviewCrudController'}) }}" class="btn btn-outline-light btn-sm mb-2">Avis</a><br>
+                    <a href="{{ path('admin', {'crudControllerFqcn': 'App\\Controller\\Admin\\CodePromoCrudController'}) }}" class="btn btn-outline-light btn-sm">Codes Promo</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <div class="card mb-3">
+                <div class="card-header">Évolution des ventes (exemple)</div>
+                <div class="card-body">
+                    <canvas id="salesChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-header">Infos rapides</div>
+                <div class="card-body">
+                    <ul>
+                        <li>Dernière connexion : <b>05/02/2026 14:12</b></li>
+                        <li>Admins actifs : <b>2</b></li>
+                        <li>Serveur : <b>OK</b></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col">
+            <h2>Bienvenue sur le dashboard Super Admin</h2>
+            <p>Vous pouvez personnaliser cette page avec des graphiques, des statistiques, des liens rapides, etc.</p>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('salesChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
+            datasets: [{
+                label: 'Ventes',
+                data: [1200, 1500, 1800, 1300, 1700, 2000],
+                borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: true }
+            }
+        }
+    });
+</script>
+{% endblock %}
