@@ -5,25 +5,40 @@
 {% block body %}
 <div class="container mt-4">
     <h1 class="mb-4">Mes Favoris</h1>
+    <div aria-live="polite" aria-atomic="true" class="position-relative">
+        <div id="wishlist-toast" class="toast position-absolute top-0 end-0 m-3" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="2000">
+            <div class="toast-header">
+                <i class="bi bi-heartbreak text-danger me-2"></i>
+                <strong class="me-auto">Favoris</strong>
+                <small>Info</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Fermer"></button>
+            </div>
+            <div class="toast-body">
+                Produit retiré des favoris.
+            </div>
+        </div>
+    </div>
     {% if products is empty %}
         <div class="alert alert-info">Vous n'avez aucun produit en favori.</div>
     {% else %}
-        <div class="row row-cols-1 row-cols-md-3 g-4">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
             {% for product in products %}
-                <div class="col">
-                    <div class="card h-100">
+                <div class="col d-flex align-items-stretch">
+                    <div class="card h-100 shadow-sm wishlist-card" data-product-id="{{ product.id }}">
                         {% if product.getMainImagePath() %}
-                            <img src="{{ asset('uploads/product_images/' ~ product.getMainImagePath()) }}" class="card-img-top" alt="{{ product.name }}">
+                            <img src="{{ asset('uploads/product_images/' ~ product.getMainImagePath()) }}" class="card-img-top wishlist-img" alt="{{ product.name }}">
                         {% endif %}
-                        <div class="card-body">
+                        <div class="card-body d-flex flex-column">
                             <h5 class="card-title">{{ product.name }}</h5>
                             <p class="card-text">{{ product.description|u.truncate(80, '...') }}</p>
-                            <a href="{{ path('app_product_show', {id: product.id}) }}" class="btn btn-primary">Voir le produit</a>
-                            <form method="post" action="{{ path('wishlist_remove', {id: product.id}) }}" style="display:inline">
-                                <button type="submit" class="btn btn-outline-danger ms-2" title="Retirer des favoris">
-                                    <i class="bi bi-heartbreak"></i> Retirer
-                                </button>
-                            </form>
+                            <div class="mt-auto">
+                                <a href="{{ path('app_product_show', {id: product.id}) }}" class="btn btn-primary">Voir le produit</a>
+                                <form method="post" action="{{ path('wishlist_remove', {id: product.id}) }}" class="wishlist-remove-form" data-product-id="{{ product.id }}" style="display:inline">
+                                    <button type="submit" class="btn btn-outline-danger ms-2" title="Retirer des favoris">
+                                        <i class="bi bi-heartbreak"></i> Retirer
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>

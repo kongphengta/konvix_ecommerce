@@ -1,3 +1,33 @@
+// Animation et feedback pour la wishlist (page Mes Favoris)
+import { Toast } from 'bootstrap';
+
+$(document).ready(function () {
+    // Animation de suppression de favori
+    $('.wishlist-remove-form').on('submit', function (e) {
+        e.preventDefault();
+        var $form = $(this);
+        var $card = $form.closest('.wishlist-card');
+        var productId = $form.data('product-id');
+        // Animation CSS
+        $card.addClass('wishlist-removing');
+        // Envoi du POST via AJAX
+        $.post($form.attr('action'), $form.serialize(), function () {
+            setTimeout(function () {
+                $card.fadeOut(400, function () {
+                    $card.parent().remove();
+                    // Afficher le toast Bootstrap
+                    var toastEl = document.getElementById('wishlist-toast');
+                    if (toastEl) {
+                        var toast = Toast.getOrCreateInstance(toastEl);
+                        toast.show();
+                    }
+                });
+            }, 200);
+        });
+    });
+
+    // ...existing code...
+});
 /*
  * Welcome to your app's main JavaScript file!
  *

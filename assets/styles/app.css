@@ -1,3 +1,29 @@
+/* Wishlist page improvements */
+.wishlist-img {
+	object-fit: contain;
+	width: 100%;
+	height: 220px;
+	border-radius: 0.5rem 0.5rem 0 0;
+	background: #f8f9fa;
+	padding: 10px;
+	display: block;
+}
+
+.wishlist-card {
+.wishlist-card {
+	transition: transform 0.2s, box-shadow 0.2s, opacity 0.4s;
+}
+.wishlist-removing {
+	 opacity: 0.3;
+	 transform: scale(0.97);
+	 pointer-events: none;
+}
+}
+.wishlist-card:hover {
+	transform: translateY(-6px) scale(1.03);
+	box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+	border-color: #0d6efd;
+}
 /* assets/styles/app.css */
 @import '~bootstrap/dist/css/bootstrap.min.css';
 body {
