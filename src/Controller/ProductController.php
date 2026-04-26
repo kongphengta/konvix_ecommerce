@@ -26,10 +26,18 @@ final class ProductController extends AbstractController
     }
 
     #[Route('/', name: 'app_home')]
-    public function index(): Response
+    public function index(EntityManagerInterface $em): Response
     {
-        // Page d'accueil simple, à personnaliser selon tes besoins
-        return $this->redirectToRoute('product_list');
+        // Récupère les 8 derniers produits validés pour la page d'accueil
+        $featuredProducts = $em->getRepository(Product::class)->findBy(
+            ['isValidated' => true],
+            ['id' => 'DESC'],
+            8
+        );
+
+        return $this->render('home/index.html.twig', [
+            'featuredProducts' => $featuredProducts,
+        ]);
     }
 
     #[Route('/products', name: 'product_list')]

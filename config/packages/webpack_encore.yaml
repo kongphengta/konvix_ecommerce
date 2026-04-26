@@ -20,8 +20,8 @@ webpack_encore:
     # Preload all rendered script and link tags automatically via the HTTP/2 Link header
     # preload: true
 
-    # Throw an exception if the entrypoints.json file is missing or an entry is missing from the data
-    # strict_mode: false
+    # Do not crash pages in dev/test when assets are not built yet.
+    strict_mode: false
 
     # If you have multiple builds:
     # builds:
@@ -31,14 +31,16 @@ webpack_encore:
         # {{ encore_entry_script_tags('entry1', null, 'frontend') }}
 
 framework:
-    assets:
-        json_manifest_path: '%kernel.project_dir%/public/build/manifest.json'
+    assets: ~
 
-#when@prod:
-#    webpack_encore:
-#        # Cache the entrypoints.json (rebuild Symfony's cache when entrypoints.json changes)
-#        # Available in version 1.2
-#        cache: true
+when@prod:
+    framework:
+        assets:
+            json_manifest_path: '%kernel.project_dir%/public/build/manifest.json'
+    webpack_encore:
+        # Cache the entrypoints.json (rebuild Symfony's cache when entrypoints.json changes)
+        # Available in version 1.2
+        cache: true
 
 #when@test:
 #    webpack_encore:

@@ -33,24 +33,23 @@
 			<div class="col-md-3">
 				<h6>Suivez-nous</h6>
 				<p class="small">Restez connectés avec Konvix !</p>
-				<div>
-					<a href="#" class="text-white-50 me-3">
-						<i class="fab fa-facebook fa-lg"></i>
+				<div class="d-flex gap-3 fs-4">
+					{# TODO: Remplace les # par tes vraies URLs de réseaux sociaux (ex: https://facebook.com/konvix) #}
+					<a href="#" class="text-white-50" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
+						<i class="bi bi-facebook"></i>
 					</a>
-					<a href="#" class="text-white-50 me-3">
-						<i class="fab fa-twitter fa-lg"></i>
+					<a href="#" class="text-white-50" aria-label="Twitter / X" target="_blank" rel="noopener noreferrer">
+						<i class="bi bi-twitter-x"></i>
 					</a>
-					<a href="#" class="text-white-50">
-						<i class="fab fa-instagram fa-lg"></i>
+					<a href="#" class="text-white-50" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
+						<i class="bi bi-instagram"></i>
 					</a>
 				</div>
 			</div>
 		</div>
 		<hr class="bg-secondary my-3">
 		<div class="text-center">
-			<small>&copy;
-				{{ "now"|date("Y") }}
-				Konvix Technology - Tous droits réservés</small>
+			<small>&#169; {{ "now"|date("Y") }} Konvix Technology — Tous droits réservés</small>
 		</div>
 	</div>
 </footer>

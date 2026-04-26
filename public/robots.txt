@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Bloquer les zones privées
+Disallow: /admin/
+Disallow: /profile/
+Disallow: /cart/
+Disallow: /checkout/
+Disallow: /seller/
+
+Sitemap: https://www.konvix.fr/sitemap.xml

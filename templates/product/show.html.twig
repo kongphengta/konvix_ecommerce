@@ -1,5 +1,22 @@
 {% extends 'base.html.twig' %}
 
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block meta %}
+	<meta name="description" content="{{ product.description|striptags|slice(0, 155)|raw }}">
+	<meta name="robots" content="index, follow">
+{% endblock %}
+
+{% block og %}
+	<meta property="og:type" content="product">
+	<meta property="og:site_name" content="Konvix Technology">
+	<meta property="og:title" content="{{ product.name }} — Konvix Technology">
+	<meta property="og:description" content="{{ product.description|striptags|slice(0, 155)|raw }}">
+	<meta property="og:image" content="{{ absolute_url('/uploads/product_images/' ~ product.imageFolder ~ '/' ~ product.mainImage) }}">
+	<meta property="og:url" content="{{ app.request.uri }}">
+	<meta property="product:price:amount" content="{{ product.price }}">
+	<meta property="product:price:currency" content="EUR">
+{% endblock %}
 
 {% block body %}
 	<!-- ========== SECTION FICHE PRODUIT ========== -->
