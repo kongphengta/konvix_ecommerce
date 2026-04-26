@@ -1,6 +1,8 @@
 # Autorise l'accès aux fichiers uploadés
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    # Toujours servir le favicon .ico demandé par les navigateurs via le SVG.
+    RewriteRule ^favicon\.ico$ favicon.svg [L,NC]
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^ index.php [QSA,L]
