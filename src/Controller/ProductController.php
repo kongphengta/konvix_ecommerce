@@ -47,6 +47,11 @@ final class ProductController extends AbstractController
         $page = $request->query->getInt('page', 1);
         $limit = 12;
 
+         $breadcrumbs = [
+        ['label' => 'Accueil', 'route' => 'app_home'],
+        ['label' => 'Produits', 'route' => null], // page actuelle
+    ];
+
         if ($query) {
             $qb = $em->getRepository(Product::class)->createQueryBuilder('p');
             $qb->where('p.name LIKE :q OR p.description LIKE :q')
@@ -74,13 +79,20 @@ final class ProductController extends AbstractController
             'products' => $pagination['products'],
             'pagination' => $pagination,
             'query' => $query,
+            'breadcrumbs' => $breadcrumbs,
+            
         ]);
     }
 
     #[Route('/product/{id}', name: 'app_product_show')]
     public function show(Product $product, EntityManagerInterface $em, \Symfony\Component\HttpFoundation\Request $request): Response
     {
-
+         $breadcrumbs = [
+        ['label' => 'Accueil', 'route' => 'app_home'],
+        ['label' => 'Produits', 'route' => 'product_list'],
+        ['label' => $product->getName(), 'route' => null], // page actuelle
+        ];
+        
         $review = new \App\Entity\Review();
         $form = $this->createForm(\App\Form\ReviewType::class, $review);
         $form->handleRequest($request);
@@ -167,6 +179,7 @@ final class ProductController extends AbstractController
             'reviewForm' => $form->createView(),
             'alreadyReviewed' => $alreadyReviewed,
             'averageRating' => $averageRating,
+            'breadcrumbs' => $breadcrumbs,
         ]);
     }
 }

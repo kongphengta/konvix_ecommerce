@@ -5,10 +5,14 @@ namespace App\Service;
 use Symfony\Component\HttpFoundation\RequestStack;
 use App\Repository\ProductRepository;
 use App\Repository\CodePromoRepository;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class CartService
 {
+    private const BUBBLE_ENVELOPE_WEIGHT_GRAMS = 20.0;
+    private const DEFAULT_PRODUCT_WEIGHT_GRAMS = 100.0;
+    private const SMALL_CART_MAX_TOTAL = 8.00;
+    private const SMALL_CART_LETTER_CAP = 2.90;
+
     private $requestStack;
     private $productRepository;
     private $codePromoRepository;
@@ -51,6 +55,109 @@ class CartService
     {
         $session = $this->requestStack->getSession();
         $session->remove(self::CART_KEY);
+    }
+
+    public function getCartWeightGrams(): float
+    {
+        $cart = $this->getCart();
+        $weight = 0.0;
+
+        foreach ($cart as $productId => $quantity) {
+            $product = $this->productRepository->find($productId);
+            if (!$product) {
+                continue;
+            }
+
+            $productWeight = $product->getWeight();
+            if ($productWeight === null || $productWeight <= 0) {
+                $productWeight = self::DEFAULT_PRODUCT_WEIGHT_GRAMS;
+            }
+            $weight += max(0.0, $productWeight) * (int) $quantity;
+        }
+
+        return $weight;
+    }
+
+    public function getShippingWeightGrams(): float
+    {
+        $productsWeight = $this->getCartWeightGrams();
+        if ($productsWeight <= 0) {
+            return 0.0;
+        }
+
+        return $productsWeight + self::BUBBLE_ENVELOPE_WEIGHT_GRAMS;
+    }
+
+    public function getTransporteurs(): array
+    {
+        $shippingWeight = $this->getShippingWeightGrams();
+        $cartData = $this->getDetailedCart();
+        $cartTotal = (float) ($cartData['totalAvecPromo'] ?? 0.0);
+        $lettrePrice = $this->calculateLettreSuiviePrice($shippingWeight, $cartTotal);
+
+        return [
+            'colissimo' => [
+                'id' => 'colissimo',
+                'name' => 'Colissimo',
+                'price' => 5.90,
+                'desc' => 'Livraison a domicile sous 2 jours ouvres.',
+                'available' => true,
+            ],
+            'mondial' => [
+                'id' => 'mondial',
+                'name' => 'Mondial Relay',
+                'price' => 4.50,
+                'desc' => 'Livraison en point relais sous 3 a 5 jours.',
+                'available' => true,
+            ],
+            'chrono' => [
+                'id' => 'chrono',
+                'name' => 'Chronopost',
+                'price' => 12.00,
+                'desc' => 'Express a domicile sous 24h.',
+                'available' => true,
+            ],
+            'lettre_suivie' => [
+                'id' => 'lettre_suivie',
+                'name' => 'Lettre suivie La Poste',
+                'price' => $lettrePrice ?? 0.0,
+                'desc' => $lettrePrice !== null
+                    ? 'Tarif calcule selon le poids total (produits + enveloppe a bulles).'
+                    : 'Indisponible au-dela de 2 kg (poids panier trop eleve).',
+                'available' => $lettrePrice !== null,
+            ],
+        ];
+    }
+
+    private function calculateLettreSuiviePrice(float $shippingWeight, float $cartTotal): ?float
+    {
+        if ($shippingWeight <= 0) {
+            return 0.0;
+        }
+
+        // Barème Lettre suivie plus adapté aux petits paniers.
+        if ($shippingWeight <= 20) {
+            $basePrice = 2.20;
+        } elseif ($shippingWeight <= 100) {
+            $basePrice = 2.90;
+        } elseif ($shippingWeight <= 250) {
+            $basePrice = 3.70;
+        } elseif ($shippingWeight <= 500) {
+            $basePrice = 4.90;
+        } elseif ($shippingWeight <= 1000) {
+            $basePrice = 6.70;
+        } elseif ($shippingWeight <= 2000) {
+            $basePrice = 8.90;
+        } else {
+            return null;
+        }
+
+        // Evite qu'un petit article soit pénalisé par des frais trop élevés.
+        if ($cartTotal > 0 && $cartTotal <= self::SMALL_CART_MAX_TOTAL) {
+            return min($basePrice, self::SMALL_CART_LETTER_CAP);
+        }
+
+        return $basePrice;
     }
 
     public function getDetailedCart(): array

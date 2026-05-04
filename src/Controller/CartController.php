@@ -17,7 +17,7 @@ class CartController extends AbstractController
 {
     // Affiche le contenu du panier avec les détails des produits, le total, les réductions appliquées et le code promo utilisé, ainsi que le transporteur sélectionné
     #[Route('/cart/checkout', name: 'cart_checkout', methods: ['POST'])]
-    public function checkout(Request $request, CodePromoRepository $codePromoRepository, CodePromoUsageRepository $codePromoUsageRepository, TokenStorageInterface $tokenStorage): RedirectResponse
+    public function checkout(Request $request, CartService $cartService, CodePromoRepository $codePromoRepository, CodePromoUsageRepository $codePromoUsageRepository, TokenStorageInterface $tokenStorage): RedirectResponse
     {
         $session = $request->getSession();
         // Gestion du code promo
@@ -48,7 +48,8 @@ class CartController extends AbstractController
         }
         // Gestion du transporteur
         $selected = $request->request->get('transporteur', '');
-        if ($selected == '') {
+        $transporteurs = $cartService->getTransporteurs();
+        if ($selected == '' || !isset($transporteurs[$selected]) || !$transporteurs[$selected]['available']) {
             $this->addFlash('warning', 'Veuillez sélectionner un mode de livraison avant de passer la commande.');
             return $this->redirectToRoute('cart_index');
         }
@@ -62,13 +63,21 @@ class CartController extends AbstractController
         $cartData = $cartService->getDetailedCart();
         $session = $request->getSession();
         $selectedTransporteur = $session->get('cart_transporteur', '');
+        $transporteurs = $cartService->getTransporteurs();
+        $selectedFrais = (isset($transporteurs[$selectedTransporteur]) && $transporteurs[$selectedTransporteur]['available'])
+            ? $transporteurs[$selectedTransporteur]['price']
+            : 0.0;
+
         return $this->render('cart/index.html.twig', [
             'cart' => $cartData['items'],
             'total' => $cartData['total'],
             'reduction' => $cartData['reduction'],
             'codePromo' => $cartData['codePromo'],
             'totalAvecPromo' => $cartData['totalAvecPromo'],
-            'selectedTransporteur' => $selectedTransporteur
+            'selectedTransporteur' => $selectedTransporteur,
+            'transporteurs' => array_values($transporteurs),
+            'selectedFrais' => $selectedFrais,
+            'shippingWeight' => $cartService->getShippingWeightGrams(),
         ]);
     }
     // Ajoute un produit au panier avec une quantité optionnelle, puis redirige vers la page du panier avec un message de succès

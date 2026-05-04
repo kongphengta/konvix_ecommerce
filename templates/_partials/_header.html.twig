@@ -11,8 +11,19 @@
 			   <li class="nav-item">
 				   <a class="nav-link text-white" href="{{ path('app_home') }}">Accueil</a>
 			   </li>
-			   <li class="nav-item">
-				   <a class="nav-link text-white" href="#">Catégories</a>
+			   <li class="nav-item dropdown">
+				   <a class="nav-link dropdown-toggle text-white" href="#" id="categoriesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+					   Catégories
+				   </a>
+				   <ul class="dropdown-menu" aria-labelledby="categoriesDropdown">
+					   {% for category in all_categories() %}
+						   <li>
+							   <a class="dropdown-item" href="{{ path('category_index', { id: category.id }) }}">
+								   {{ category.name }}
+							   </a>
+						   </li>
+					   {% endfor %}
+				   </ul>
 			   </li>
 		   </ul>
 		   <ul class="navbar-nav ms-auto mb-2 mb-lg-0 gap-3 align-items-center d-flex">
@@ -29,6 +40,8 @@
 					   </a>
 					   <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
 						   <li>
+					
+					
 							   <a class="dropdown-item" href="{{ path('app_profile') }}">Mon Profil</a>
 						   </li>
 						   <li>

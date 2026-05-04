@@ -1,7 +1,37 @@
 {% extends 'base.html.twig' %}
 
+{% block breadcrumb %}
+    {% include '_partials/_breadcrumb.html.twig' %}
+{% endblock %}
+
 {% block body %}
 	<div class="container my-5">
-		<h1>Bienvenue sur notre site Konvix</h1>
+		<h1>{{ category.name }}</h1>
+		<p>{{ category.description }}</p>
 	</div>
+
+	<h2 class="mt-4">Produits</h2>
+
+    <div class="row mt-3">
+        {% for product in products %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    {% if product.mainImage %}
+                    <img src="{{ asset('uploads/product_images/' ~ product.mainImage) }}" class="card-img-top" alt="{{ product.name }}">
+                    {% endif %}
+                   <div class="card-body">
+                        <h5 class="card-title">{{ product.name }}</h5>
+                        <p class="card-text">{{ product.price }} €</p>
+                        <a href="{{ path('app_product_show', { id: product.id }) }}" class="btn btn-primary">
+                        Voir le produit
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+        <p>Aucun produit dans cette catégorie.</p>
+        {% endfor %}
+    </div>
 {% endblock %}
+
+

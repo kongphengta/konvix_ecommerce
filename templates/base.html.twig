@@ -34,12 +34,13 @@
 		{{ encore_entry_link_tags('app') }}
 	</head>
 	<body class="bg-light d-flex flex-column min-vh-100">
-		<div
-			class="container mt-4 mb-3">
-			{# Breadcrumb à personnaliser selon la page courante #}
-			{% block breadcrumb %}{% endblock %}
-		</div>
+		   
 		{% include '_partials/_header.html.twig' %}
+
+        <div class="container mt-3">
+        {% block breadcrumb %}{% endblock %}
+        </div>
+
 		<div class="container mt-5">
 			{% for label, messages in app.flashes %}
 				{% for message in messages %}
@@ -47,6 +48,7 @@
 				{% endfor %}
 			{% endfor %}
 		</div>
+
 
 		<main class="container mb-5 flex-fill"> {% block body %}{% endblock %}
 			</main>

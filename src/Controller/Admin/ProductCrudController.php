@@ -14,6 +14,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use Vich\UploaderBundle\Form\Type\VichImageType;
 use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
@@ -61,6 +62,13 @@ class ProductCrudController extends AbstractCrudController
             TextEditorField::new('description'),
             NumberField::new('price'),
             DateTimeField::new('createdAt'),
+            ChoiceField::new('condition', 'Etat')
+                ->setChoices([
+                    'Neuf (jamais utilise)' => Product::CONDITION_NEW,
+                    'Occasion (deja utilise)' => Product::CONDITION_USED,
+                ])
+                ->renderAsNativeWidget(),
+            NumberField::new('weight', 'Poids (g)'),
             IntegerField::new('stock'),
             Field::new('mainImageFile')
                 ->setFormType(VichImageType::class)

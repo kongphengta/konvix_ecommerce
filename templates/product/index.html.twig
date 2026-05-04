@@ -1,8 +1,24 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Accueil - Nos produits
+{# Personnalisation du titre de la page #}
+{% block title %}Découvrir nos produits{% endblock %}
+
+{% block breadcrumb %}
+	{% include '_partials/_breadcrumb.html.twig' %}
 {% endblock %}
 
+{# Personnalisation de la meta description #}
+{% block meta %}
+    <meta name="description" content="Découvrez tous nos produits sur Konvix Technology : pièces auto, accessoires, et plus encore. Livraison rapide et paiement sécurisé.">
+    <meta name="robots" content="index, follow">
+{% endblock %}
+
+{# Personnalisation des balises Open Graph #}
+{% block og_title %}Nos produits – Konvix Technology{% endblock %}
+{% block og_description %}Parcourez notre sélection de produits de qualité sur Konvix Technology.{% endblock %}
+{% block og_image %}{{ absolute_url('/uploads/product_images/konvixlogo.png') }}{% endblock %}
+
+{# Contenu principal de la page #}
 {% block body %}
 	{% include '_partials/_hero.html.twig' %}
 	<form method="get" action="{{ path('product_list') }}" class="mb-4">

@@ -10,9 +10,16 @@
 {% block og_title %}Konvix Technology — Marketplace technologique{% endblock %}
 {% block og_description %}Découvrez notre marketplace de produits technologiques : accessoires, électronique, pièces auto et plus.{% endblock %}
 
+{% block breadcrumb %}
+    {% include '_partials/_breadcrumb.html.twig' %}
+{% endblock %}
+
 {% block body %}
 	{# Carrousel hero #}
 	{% include '_partials/_hero.html.twig' %}
+
+	{# Breadcrumb sous le carrousel #}
+	{% include '_partials/_breadcrumb.html.twig' %}
 
 	{# Section produits en vedette #}
 	{% if featuredProducts|length > 0 %}

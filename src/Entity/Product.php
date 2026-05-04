@@ -15,6 +15,9 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 #[Vich\Uploadable]
 class Product
 {
+    public const CONDITION_NEW = 'new';
+    public const CONDITION_USED = 'used';
+
     #[ORM\Column(type: 'float', nullable: true)]
     private ?float $weight = null;
 
@@ -138,6 +141,10 @@ class Product
     #[ORM\Column(type: 'integer', options: ['default' => 5])]
     private int $criticalThreshold = 5;
 
+    #[ORM\Column(name: 'product_condition', length: 20, options: ['default' => self::CONDITION_NEW])]
+    #[Assert\Choice(choices: [self::CONDITION_NEW, self::CONDITION_USED])]
+    private string $condition = self::CONDITION_NEW;
+
     public function __construct()
     {
         $this->productImages = new ArrayCollection();
@@ -256,6 +263,23 @@ class Product
     {
         $this->criticalThreshold = $criticalThreshold;
         return $this;
+    }
+
+    public function getCondition(): string
+    {
+        return $this->condition;
+    }
+
+    public function setCondition(string $condition): self
+    {
+        $this->condition = $condition;
+
+        return $this;
+    }
+
+    public function getConditionLabel(): string
+    {
+        return $this->condition === self::CONDITION_USED ? 'Occasion' : 'Neuf';
     }
 
     public function addProductImage(ProductImage $productImage): static

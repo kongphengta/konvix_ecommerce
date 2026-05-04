@@ -1,17 +1,17 @@
-<div class="mt-4 mb-3">
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb bg-white px-3 py-2 rounded shadow-sm">
-            <li class="breadcrumb-item">
-                <a href="{{ path('app_home') }}">Accueil</a>
-            </li>
-            {% if category is defined %}
-                <li class="breadcrumb-item">
-                    <a href="#">{{ category.name }}</a>
-                </li>
-            {% endif %}
-            {% if product is defined %}
-                <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
-            {% endif %}
-        </ol>
-    </nav>
-</div>
+{% if breadcrumbs is defined and breadcrumbs is not empty %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    {% for item in breadcrumbs %}
+      {% if item.route %}
+        <li class="breadcrumb-item">
+          <a href="{{ path(item.route, item.params|default({})) }}">{{ item.label }}</a>
+        </li>
+      {% else %}
+        <li class="breadcrumb-item active" aria-current="page">
+          {{ item.label }}
+        </li>
+      {% endif %}
+    {% endfor %}
+  </ol>
+</nav>
+{% endif %}

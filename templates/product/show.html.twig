@@ -12,6 +12,9 @@
 	<meta property="og:site_name" content="Konvix Technology">
 	<meta property="og:title" content="{{ product.name }} — Konvix Technology">
 	<meta property="og:description" content="{{ product.description|striptags|slice(0, 155)|raw }}">
+
+    <!-- ========== SECTION FICHE PRODUIT ========== -->
+    <div class="card mb-4">
 	<meta property="og:image" content="{{ absolute_url('/uploads/product_images/' ~ product.imageFolder ~ '/' ~ product.mainImage) }}">
 	<meta property="og:url" content="{{ app.request.uri }}">
 	<meta property="product:price:amount" content="{{ product.price }}">
@@ -20,6 +23,7 @@
 
 {% block body %}
 	<!-- ========== SECTION FICHE PRODUIT ========== -->
+	{% include '_partials/_breadcrumb.html.twig' %}
 	<div class="card mb-4">
 		<div class="card-header d-flex justify-content-between align-items-center bg-white" style="padding: 1.2rem 2rem 0.5rem 2rem;">
 			<span class="fw-bold fs-4">Présentation du produit</span>
@@ -83,6 +87,16 @@
 					<h1 class="fw-bold">{{ product.name }}</h1>
 					<p class="fs-2 fw-bold text-danger">{{ product.price|number_format(2, '.', ' ') }}
 						€</p>
+					<p>
+						<span class="text-muted">Etat :</span>
+						<span class="fw-semibold {% if product.condition == 'used' %}text-warning{% else %}text-success{% endif %}">
+							{% if product.condition == 'used' %}
+								Occasion (deja utilise)
+							{% else %}
+								Neuf (jamais utilise)
+							{% endif %}
+						</span>
+					</p>
 					<p>
 						<span class="text-muted">Catégorie :</span>
 						{{ product.category.name }}

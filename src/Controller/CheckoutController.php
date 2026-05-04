@@ -61,12 +61,8 @@ class CheckoutController extends AbstractController
             }
             // Vérification du choix du transporteur
             $selected = $request->request->get('transporteur', $session->get('cart_transporteur', ''));
-            $transporteurs = [
-                'colissimo' => ['name' => 'Colissimo', 'price' => 5.90],
-                'mondial' => ['name' => 'Mondial Relay', 'price' => 4.50],
-                'chrono' => ['name' => 'Chronopost', 'price' => 12.00],
-            ];
-            if ($selected == '' || !isset($transporteurs[$selected])) {
+            $transporteurs = $cartService->getTransporteurs();
+            if ($selected == '' || !isset($transporteurs[$selected]) || !$transporteurs[$selected]['available']) {
                 $this->addFlash('warning', 'Avant de passer la commande il faut sélectionner votre transporteur.');
                 return $this->redirectToRoute('cart_index');
             }
@@ -81,24 +77,16 @@ class CheckoutController extends AbstractController
         // Centralisation du transporteur : priorité à la session checkout, sinon à la session cart
         // Récupère le transporteur depuis la requête GET si présent (redirection depuis le panier)
         $selected = $request->query->get('transporteur', $session->get('cart_transporteur', ''));
-        $transporteurs = [
-            'colissimo' => ['name' => 'Colissimo', 'price' => 5.90],
-            'mondial' => ['name' => 'Mondial Relay', 'price' => 4.50],
-            'chrono' => ['name' => 'Chronopost', 'price' => 12.00],
-        ];
+        $transporteurs = $cartService->getTransporteurs();
         // Si aucun transporteur n'est sélectionné, on bloque l'accès à la page checkout
-        if ($selected == '' || !isset($transporteurs[$selected])) {
+        if ($selected == '' || !isset($transporteurs[$selected]) || !$transporteurs[$selected]['available']) {
             $this->addFlash('warning', 'Veuillez sélectionner un mode de livraison avant de passer la commande.');
             return $this->redirectToRoute('cart_index');
         }
         $transporteur = $transporteurs[$selected];
         $session->set('checkout_transporteur', $transporteur);
         $session->set('cart_transporteur', $selected);
-        $transporteurs = [
-            'colissimo' => ['name' => 'Colissimo', 'price' => 5.90],
-            'mondial' => ['name' => 'Mondial Relay', 'price' => 4.50],
-            'chrono' => ['name' => 'Chronopost', 'price' => 12.00],
-        ];
+        $transporteurs = $cartService->getTransporteurs();
         $transporteur = $session->get('checkout_transporteur');
         if (!$transporteur || !isset($transporteur['name'])) {
             $transporteur = $selected && isset($transporteurs[$selected]) ? $transporteurs[$selected] : ['name' => 'Non renseigné', 'price' => 0.00];
@@ -130,11 +118,7 @@ class CheckoutController extends AbstractController
             $session->set('checkout_address', $address);
         }
         $selected = $session->get('cart_transporteur', '');
-        $transporteurs = [
-            'colissimo' => ['name' => 'Colissimo', 'price' => 5.90],
-            'mondial' => ['name' => 'Mondial Relay', 'price' => 4.50],
-            'chrono' => ['name' => 'Chronopost', 'price' => 12.00],
-        ];
+        $transporteurs = $cartService->getTransporteurs();
         $transporteur = $session->get('checkout_transporteur');
         if (!$transporteur || !isset($transporteur['name'])) {
             $transporteur = $selected && isset($transporteurs[$selected]) ? $transporteurs[$selected] : ['name' => 'Non renseigné', 'price' => 0.00];
@@ -160,11 +144,7 @@ class CheckoutController extends AbstractController
         $session = $request->getSession();
         $address = $session->get('checkout_address');
         $selected = $session->get('cart_transporteur', '');
-        $transporteurs = [
-            'colissimo' => ['name' => 'Colissimo', 'price' => 5.90],
-            'mondial' => ['name' => 'Mondial Relay', 'price' => 4.50],
-            'chrono' => ['name' => 'Chronopost', 'price' => 12.00],
-        ];
+        $transporteurs = $cartService->getTransporteurs();
         $transporteur = $session->get('checkout_transporteur');
         if (!$transporteur || !isset($transporteur['name'])) {
             $transporteur = $selected && isset($transporteurs[$selected]) ? $transporteurs[$selected] : ['name' => 'Non renseigné', 'price' => 0.00];
@@ -428,11 +408,7 @@ class CheckoutController extends AbstractController
         // Ajouter le frais de livraison (transporteur)
         $session = $request->getSession();
         $selected = $session->get('cart_transporteur', '');
-        $transporteurs = [
-            'colissimo' => ['name' => 'Colissimo', 'price' => 5.90],
-            'mondial' => ['name' => 'Mondial Relay', 'price' => 4.50],
-            'chrono' => ['name' => 'Chronopost', 'price' => 12.00],
-        ];
+        $transporteurs = $cartService->getTransporteurs();
         $transporteur = $session->get('checkout_transporteur');
         if (!$transporteur || !isset($transporteur['name'])) {
             $transporteur = $selected && isset($transporteurs[$selected]) ? $transporteurs[$selected] : ['name' => 'Non renseigné', 'price' => 0.00];
@@ -503,12 +479,7 @@ class CheckoutController extends AbstractController
         $session = $request->getSession();
         $address = $session->get('checkout_address');
         $selected = $session->get('cart_transporteur', '');
-        $transporteurs = [
-            'colissimo' => ['name' => 'Colissimo', 'price' => 5.90],
-            'mondial' => ['name' => 'Mondial Relay', 'price' => 4.50],
-            'chrono' => ['name' => 'Chronopost', 'price' => 12.00],
-        ];
-
+        $transporteurs = $cartService->getTransporteurs();
         $transporteur = $session->get('checkout_transporteur');
         if (!$transporteur || !isset($transporteur['name'])) {
             $transporteur = $selected && isset($transporteurs[$selected]) ? $transporteurs[$selected] : ['name' => 'Non renseigné', 'price' => 0.00];
