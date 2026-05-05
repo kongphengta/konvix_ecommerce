@@ -51,6 +51,29 @@ Konvix E-commerce est une application Symfony 7 moderne permettant la gestion co
 - Accès admin : /admin (compte admin requis)
 - Comptes de test : voir fixtures ou demander à l’enseignant
 
+## Synchroniser Prod vers Dev (Automatisé)
+Pour garder la base locale et les uploads alignés avec la production, utilisez le script fourni.
+
+1. Préparer la configuration locale (non versionnée) :
+   ```bash
+   cp .sync.env.example .sync.env
+   ```
+2. Éditer `.sync.env` selon vos accès VPS/DB.
+3. Rendre le script exécutable puis lancer :
+   ```bash
+   chmod +x scripts/sync_prod_to_dev.sh
+   ./scripts/sync_prod_to_dev.sh
+   ```
+
+Options utiles :
+```bash
+./scripts/sync_prod_to_dev.sh --no-db
+./scripts/sync_prod_to_dev.sh --no-uploads
+./scripts/sync_prod_to_dev.sh --no-local-backup
+```
+
+Recommandation : considérez la prod comme source de vérité pour les données. Le code continue de passer par Git + migrations.
+
 ## Structure du projet
 - `src/Entity/` : entités Doctrine (User, Product, Review...)
 - `src/Controller/` : contrôleurs (front, admin, seller)

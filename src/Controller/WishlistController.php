@@ -7,7 +7,6 @@ use App\Repository\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -19,8 +18,14 @@ class WishlistController extends AbstractController
      * @param EntityManagerInterface $em
      * @return RedirectResponse
      */
-    public function add(Product $product, EntityManagerInterface $em): RedirectResponse
+    public function add(int $id, ProductRepository $productRepository, EntityManagerInterface $em): RedirectResponse
     {
+        $product = $productRepository->find($id);
+        if (!$product) {
+            $this->addFlash('warning', 'Ce produit est introuvable ou a ete supprime.');
+            return $this->redirectToRoute('product_list');
+        }
+
         /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
         if (!$user) {
@@ -39,8 +44,14 @@ class WishlistController extends AbstractController
      * @param EntityManagerInterface $em
      * @return RedirectResponse
      */
-    public function remove(Product $product, EntityManagerInterface $em): RedirectResponse
+    public function remove(int $id, ProductRepository $productRepository, EntityManagerInterface $em): RedirectResponse
     {
+        $product = $productRepository->find($id);
+        if (!$product) {
+            $this->addFlash('warning', 'Ce produit est introuvable ou a ete supprime.');
+            return $this->redirectToRoute('wishlist_index');
+        }
+
         /** @var \App\Entity\User|null $user */
         $user = $this->getUser();
         if (!$user) {

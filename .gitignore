@@ -19,6 +19,12 @@ npm-debug.log
 yarn-error.log
 ###< symfony/webpack-encore-bundle ###
 
+###> local sync tooling ###
+/.sync.env
+/tmp/sync-db/
+/konvix_ecommerce.sql
+###< local sync tooling ###
+
 ###> tests documentation ###
 /tests/_output/
 /tests_doc

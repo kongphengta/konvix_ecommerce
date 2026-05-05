@@ -85,8 +85,13 @@ final class ProductController extends AbstractController
     }
 
     #[Route('/product/{id}', name: 'app_product_show')]
-    public function show(Product $product, EntityManagerInterface $em, \Symfony\Component\HttpFoundation\Request $request): Response
+    public function show(int $id, EntityManagerInterface $em, \Symfony\Component\HttpFoundation\Request $request): Response
     {
+        $product = $em->getRepository(Product::class)->find($id);
+        if (!$product) {
+            return $this->redirectToRoute('product_list');
+        }
+
          $breadcrumbs = [
         ['label' => 'Accueil', 'route' => 'app_home'],
         ['label' => 'Produits', 'route' => 'product_list'],
