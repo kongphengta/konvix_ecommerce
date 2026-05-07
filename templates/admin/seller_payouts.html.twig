@@ -1,0 +1,66 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Commissions vendeurs - Admin{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <h1 class="mb-4">Commissions vendeurs à virer</h1>
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label == 'success' ? 'success' : 'danger' }}">{{ message }}</div>
+        {% endfor %}
+    {% endfor %}
+
+    {% if pendingGrouped|length == 0 %}
+        <div class="alert alert-info">Aucun virement en attente.</div>
+    {% else %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Vendeur</th>
+                        <th>IBAN</th>
+                        <th class="text-end">Ventes brutes</th>
+                        <th class="text-end">Commission Konvix</th>
+                        <th class="text-end">Net à virer</th>
+                        <th class="text-center">Commandes</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in pendingGrouped %}
+                    <tr>
+                        <td>
+                            <strong>{{ row.seller.user.firstName }} {{ row.seller.user.lastName }}</strong><br>
+                            <small class="text-muted">{{ row.seller.user.email }}</small>
+                        </td>
+                        <td>
+                            {% if row.seller.iban %}
+                                <code>{{ row.seller.iban }}</code>
+                            {% else %}
+                                <span class="text-danger"><i class="bi bi-exclamation-triangle me-1"></i>Non renseigné</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">{{ row.grossTotal|number_format(2, ',', ' ') }} €</td>
+                        <td class="text-end text-danger">{{ row.commissionTotal|number_format(2, ',', ' ') }} €</td>
+                        <td class="text-end fw-bold text-success">{{ row.netTotal|number_format(2, ',', ' ') }} €</td>
+                        <td class="text-center">{{ row.count }}</td>
+                        <td class="text-end">
+                            <form method="post" action="{{ path('admin_seller_payouts_mark_paid', {sellerId: row.seller.id}) }}"
+                                  onsubmit="return confirm('Confirmer le virement de {{ row.netTotal|number_format(2, ',', ' ') }} € vers {{ row.seller.user.firstName }} {{ row.seller.user.lastName }} ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('payout_' ~ row.seller.id) }}">
+                                <button type="submit" class="btn btn-sm btn-success"
+                                        {% if not row.seller.iban %}disabled title="IBAN manquant"{% endif %}>
+                                    <i class="bi bi-check2-circle me-1"></i>Virement effectué
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

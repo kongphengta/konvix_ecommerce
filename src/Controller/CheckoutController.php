@@ -15,6 +15,7 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 use App\Repository\CodePromoRepository;
 use App\Repository\CodePromoUsageRepository;
 use App\Entity\CodePromoUsage;
+use App\Entity\SellerEarning;
 
 
 class CheckoutController extends AbstractController
@@ -217,6 +218,9 @@ class CheckoutController extends AbstractController
 
         $entityManager->flush();
 
+        // Calcul des commissions vendeur
+        $this->createSellerEarnings($cart['items'], $order, $entityManager);
+
         // Notification email à chaque vendeur concerné
         foreach ($vendeursProduits as $data) {
             $seller = $data['seller'];
@@ -389,7 +393,12 @@ class CheckoutController extends AbstractController
         $clientId = $_ENV['PAYPAL_CLIENT_ID'] ?? $this->getParameter('PAYPAL_CLIENT_ID');
         $clientSecret = $_ENV['PAYPAL_CLIENT_SECRET'] ?? $this->getParameter('PAYPAL_CLIENT_SECRET');
 
-        $environment = new \PayPalCheckoutSdk\Core\SandboxEnvironment($clientId, $clientSecret);
+        $appEnv = $_ENV['APP_ENV'] ?? 'dev';
+        if ($appEnv === 'prod') {
+            $environment = new \PayPalCheckoutSdk\Core\ProductionEnvironment($clientId, $clientSecret);
+        } else {
+            $environment = new \PayPalCheckoutSdk\Core\SandboxEnvironment($clientId, $clientSecret);
+        }
         $client = new \PayPalCheckoutSdk\Core\PayPalHttpClient($environment);
 
         $items = [];
@@ -532,7 +541,8 @@ class CheckoutController extends AbstractController
         }
 
         $em->flush();
-
+        // Calcul des commissions vendeur
+        $this->createSellerEarnings($cart['items'], $order, $em);
         // 3. Envoyer l’email de confirmation de commande
         $html = $this->renderView('email/order_confirmation.html.twig', [
             'user' => $user,
@@ -559,5 +569,43 @@ class CheckoutController extends AbstractController
             'address' => $address,
             'transporteur' => $transporteur,
         ]);
+    }
+
+    private function createSellerEarnings(array $items, \App\Entity\Order $order, EntityManagerInterface $em): void
+    {
+        // Regroupe les montants par vendeur
+        $sellerTotals = [];
+        foreach ($items as $item) {
+            $product = $item['product'];
+            $seller = method_exists($product, 'getSeller') ? $product->getSeller() : null;
+            if (!$seller) {
+                continue;
+            }
+            $sellerId = $seller->getId();
+            $lineTotal = $product->getPrice() * $item['quantity'];
+            if (!isset($sellerTotals[$sellerId])) {
+                $sellerTotals[$sellerId] = ['seller' => $seller, 'gross' => 0.0];
+            }
+            $sellerTotals[$sellerId]['gross'] += $lineTotal;
+        }
+
+        foreach ($sellerTotals as $data) {
+            $seller = $data['seller'];
+            $gross = round($data['gross'], 2);
+            $rate = $seller->getCommissionRate();
+            $commission = round($gross * $rate, 2);
+            $net = round($gross - $commission, 2);
+
+            $earning = new SellerEarning();
+            $earning->setSeller($seller);
+            $earning->setOrder($order);
+            $earning->setGrossAmount($gross);
+            $earning->setCommissionRate($rate);
+            $earning->setCommissionAmount($commission);
+            $earning->setNetAmount($net);
+            $em->persist($earning);
+        }
+
+        $em->flush();
     }
 }

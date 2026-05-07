@@ -338,5 +338,57 @@ class SellerController extends AbstractController
         return $this->redirectToRoute('seller_coupons_list');
     }
 
+    #[Route('/seller/earnings', name: 'seller_earnings')]
+    #[IsGranted('ROLE_SELLER')]
+    public function earnings(\App\Repository\SellerEarningRepository $earningRepository): Response
+    {
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        $seller = $user->getSeller();
 
+        if (!$seller) {
+            $this->addFlash('danger', 'Aucun compte vendeur associé.');
+            return $this->redirectToRoute('seller_dashboard');
+        }
+
+        $earnings = $earningRepository->findBy(['seller' => $seller], ['createdAt' => 'DESC']);
+        $totalPending = $earningRepository->getTotalPendingBySeller($seller);
+
+        return $this->render('seller/earnings.html.twig', [
+            'earnings' => $earnings,
+            'totalPending' => $totalPending,
+        ]);
+    }
+
+    #[Route('/seller/iban', name: 'seller_iban', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_SELLER')]
+    public function updateIban(Request $request, EntityManagerInterface $em): Response
+    {
+        /** @var \App\Entity\User $user */
+        $user = $this->getUser();
+        $seller = $user->getSeller();
+
+        if (!$seller) {
+            $this->addFlash('danger', 'Aucun compte vendeur associé.');
+            return $this->redirectToRoute('seller_dashboard');
+        }
+
+        if ($request->isMethod('POST')) {
+            $iban = trim($request->request->get('iban', ''));
+            // Validation basique : lettres/chiffres, 15-34 caractères
+            if (!preg_match('/^[A-Z]{2}[0-9A-Z]{13,32}$/', $iban)) {
+                $this->addFlash('danger', 'Format IBAN invalide.');
+            } else {
+                $seller->setIban($iban);
+                $em->flush();
+                $this->addFlash('success', 'IBAN enregistré avec succès.');
+                return $this->redirectToRoute('seller_earnings');
+            }
+        }
+
+        return $this->render('seller/iban.html.twig', [
+            'seller' => $seller,
+        ]);
+    }
 }
+

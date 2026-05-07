@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon IBAN - Espace vendeur{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <h1 class="mb-4">Mon IBAN pour les virements</h1>
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label == 'success' ? 'success' : 'danger' }}">{{ message }}</div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="card" style="max-width: 500px;">
+        <div class="card-body">
+            <p class="text-muted mb-3">
+                Renseignez votre IBAN pour recevoir vos virements. Konvix effectue les virements manuellement
+                après vérification des commandes.
+            </p>
+            <form method="post">
+                <div class="mb-3">
+                    <label for="iban" class="form-label fw-bold">IBAN</label>
+                    <input type="text" id="iban" name="iban" class="form-control"
+                           placeholder="FR76XXXXXXXXXXXXXXXXXXXX"
+                           value="{{ seller.iban ?? '' }}"
+                           maxlength="34" required>
+                    <div class="form-text">Format : FR76... (sans espaces)</div>
+                </div>
+                <input type="hidden" name="_token" value="{{ csrf_token('seller_iban') }}">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save me-1"></i>Enregistrer
+                </button>
+                <a href="{{ path('seller_earnings') }}" class="btn btn-link">Retour aux gains</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

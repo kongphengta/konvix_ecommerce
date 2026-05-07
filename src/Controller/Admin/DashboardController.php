@@ -54,5 +54,9 @@ public function superAdminDashboard(): Response
         yield MenuItem::linkToCrud('Reviews', 'fa fa-star', \App\Entity\Review::class);
         yield MenuItem::linkToCrud('Codes Promo', 'fa fa-ticket', \App\Entity\CodePromo::class);
         yield MenuItem::linkToCrud('Commandes', 'fas fa-shopping-cart', \App\Entity\Order::class);
+        yield MenuItem::linkToRoute('Commissions vendeurs', 'fas fa-wallet', 'admin_seller_payouts');
+        yield MenuItem::linkToRoute('Statistiques', 'fas fa-chart-bar', 'admin_stats');
+        yield MenuItem::section('Demandes vendeurs');
+        yield MenuItem::linkToRoute('Demandes vendeurs', 'fas fa-user-plus', 'admin_seller_requests');
     }
 }

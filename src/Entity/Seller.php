@@ -11,10 +11,18 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: SellerRepository::class)]
 class Seller
 {
+    public const COMMISSION_RATE = 0.10; // 10% par défaut
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+
+    #[ORM\Column(length: 34, nullable: true)]
+    private ?string $iban = null;
+
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $commissionRate = self::COMMISSION_RATE;
 
     #[ORM\OneToOne(inversedBy: 'seller', cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: false)]
@@ -125,5 +133,27 @@ class Seller
     public function __toString(): string
     {
         return $this->name ?? '';
+    }
+
+    public function getIban(): ?string
+    {
+        return $this->iban;
+    }
+
+    public function setIban(?string $iban): static
+    {
+        $this->iban = $iban;
+        return $this;
+    }
+
+    public function getCommissionRate(): float
+    {
+        return $this->commissionRate ?? self::COMMISSION_RATE;
+    }
+
+    public function setCommissionRate(?float $commissionRate): static
+    {
+        $this->commissionRate = $commissionRate;
+        return $this;
     }
 }

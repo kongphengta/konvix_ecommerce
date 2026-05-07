@@ -1,0 +1,63 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes gains - Espace vendeur{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Mes gains</h1>
+        <a href="{{ path('seller_iban') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-bank me-1"></i>Mon IBAN
+        </a>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-success">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-1">Solde en attente de virement</h6>
+                    <h2 class="text-success fw-bold">{{ totalPending|number_format(2, ',', ' ') }} €</h2>
+                    <small class="text-muted">Net après commission Konvix (10%)</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if earnings|length == 0 %}
+        <div class="alert alert-info">Aucun gain enregistré pour le moment.</div>
+    {% else %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>N° Commande</th>
+                        <th class="text-end">Vente brute</th>
+                        <th class="text-end">Commission (10%)</th>
+                        <th class="text-end">Net vendeur</th>
+                        <th class="text-center">Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for earning in earnings %}
+                    <tr>
+                        <td>{{ earning.createdAt|date('d/m/Y') }}</td>
+                        <td>#{{ earning.order.id }}</td>
+                        <td class="text-end">{{ earning.grossAmount|number_format(2, ',', ' ') }} €</td>
+                        <td class="text-end text-danger">- {{ earning.commissionAmount|number_format(2, ',', ' ') }} €</td>
+                        <td class="text-end fw-bold">{{ earning.netAmount|number_format(2, ',', ' ') }} €</td>
+                        <td class="text-center">
+                            {% if earning.status == 'paid' %}
+                                <span class="badge bg-success">Versé le {{ earning.paidAt|date('d/m/Y') }}</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">En attente</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
